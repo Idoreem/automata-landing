@@ -1,26 +1,421 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #02060f;
+  --bg-form: #040a16;
+  --card: #060d1c;
+  --ink: #ffffff;
+  --muted: #aab4c8;
+  --faint: #66707f;
+  --accent: #4d8dff;
+  --accent-deep: #2f6bff;
+  --accent-light: #8ab4ff;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgba(77, 141, 255, 0.4);
+  color: #ffffff;
+}
+
+/* ויזואל זרימת האוטומציה בסלוטים השמורים */
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -64;
+  }
+}
+
+.flow-line {
+  stroke-dasharray: 6 10;
+  animation: dash-flow 3.2s linear infinite;
+}
+
+@keyframes node-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+.flow-node {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: node-pulse 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-line,
+  .flow-node {
+    animation: none;
+  }
+}
+
+/* נשימת הזוהר בהירו — אמביינט עדין */
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.glow-breathe {
+  animation: glow-breathe 9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-breathe {
+    animation: none;
+  }
+}
+
+.field {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 8px;
+  padding: 16px 18px;
+  color: var(--ink);
+  font-size: 1rem;
+  outline: none;
+  width: 100%;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(77, 141, 255, 0.18);
+}
+
+/* לייבל צף — מופיע ברגע שהשדה מכיל טקסט, כדי שאימייל וטלפון לא ייראו זהים */
+.field-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.field-wrap .float-label {
+  position: absolute;
+  top: -8px;
+  inset-inline-start: 12px;
+  background: var(--card);
+  padding: 0 7px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent-light);
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.field-wrap:has(.field:not(:placeholder-shown)) .float-label {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* אימייל וטלפון: פלייסהולדר בעברית מיושר ימינה, הקלדה עוברת ל-LTR */
+.field-ltr:not(:placeholder-shown) {
+  direction: ltr;
+  text-align: left;
+}
+
+/* ===== כפתור צף למובייל ===== */
+.sticky-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: rgba(2, 6, 15, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid rgba(77, 141, 255, 0.25);
+  transform: translateY(110%);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sticky-cta.on {
+  transform: translateY(0);
+}
+
+.sticky-cta .cta-btn {
+  width: 100%;
+  max-width: 440px;
+  text-align: center;
+  font-size: 1.05rem;
+  padding: 15px 20px;
+}
+
+@media (min-width: 900px) {
+  .sticky-cta {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-cta {
+    transition: none;
+  }
+}
+
+/* ===== סקשן העדויות ===== */
+.sp-videos {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 8px 24px 24px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.sp-videos::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .sp-videos {
+    mask-image: linear-gradient(90deg, transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%);
+  }
+}
+
+.sp-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin-top: 0;
+}
+
+/* כפתור מגע 44x44 — הנקודה הוויזואלית מצוירת כ-pseudo-element קטן במרכזו */
+.sp-dot {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sp-dot::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(170, 180, 200, 0.55);
+  transition: background 0.25s, transform 0.25s;
+}
+
+.sp-dot.active::before {
+  background: var(--accent);
+  transform: translate(-50%, -50%) scale(1.35);
+}
+
+@media (min-width: 900px) {
+  .sp-dots {
+    display: none;
+  }
+}
+
+.sp-video {
+  flex: 0 0 min(70vw, 290px);
+  scroll-snap-align: center;
+  aspect-ratio: 9 / 16;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(77, 141, 255, 0.25);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 24px rgba(77, 141, 255, 0.1);
+  position: relative;
+  background: radial-gradient(ellipse 200px 320px at 50% 35%, rgba(77, 141, 255, 0.14) 0%, transparent 70%),
+    linear-gradient(180deg, #071021 0%, #030711 100%);
+}
+
+.sp-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (min-width: 900px) {
+  .sp-videos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    max-width: 920px;
+    margin: 0 auto;
+    overflow: visible;
+    padding: 8px 24px 12px;
+  }
+
+  .sp-video {
+    flex: none;
+    width: 100%;
+  }
+}
+
+.sp-photos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 920px;
+  margin: 28px auto 0;
+  padding: 0 24px;
+}
+
+@media (min-width: 900px) {
+  .sp-photos {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+  }
+}
+
+.sp-photo {
+  aspect-ratio: 4 / 5;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(77, 141, 255, 0.18);
+  position: relative;
+  background: radial-gradient(ellipse 160px 200px at 50% 40%, rgba(77, 141, 255, 0.12) 0%, transparent 70%),
+    linear-gradient(180deg, #071021 0%, #030711 100%);
+}
+
+.sp-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sp-ghost {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #78828f;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-image: linear-gradient(rgba(77, 141, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(77, 141, 255, 0.045) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.cta-btn {
+  display: inline-block;
+  background: var(--accent);
+  color: #02060f;
+  font-weight: 800;
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
+  box-shadow: 0 4px 24px rgba(77, 141, 255, 0.25);
+  letter-spacing: -0.01em;
+  border: none;
+  font-family: inherit;
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  background: var(--accent-light);
+  box-shadow: 0 8px 32px rgba(77, 141, 255, 0.4);
+}
+
+.cta-btn:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.1s;
+}
+
+.cta-btn:focus-visible,
+.field:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent-light);
+  outline-offset: 3px;
+}
+
+/* לייבלים לקוראי מסך בלבד */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* שדה פיתיון לבוטים — מוסתר מבני אדם */
+.hp-field {
+  position: absolute;
+  right: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ספינר לכפתור השליחה */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(2, 6, 15, 0.25);
+  border-top-color: #02060f;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: -3px;
+  margin-inline-end: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .spinner {
+    animation-duration: 1.6s;
+  }
 }
