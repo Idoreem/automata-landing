@@ -128,7 +128,7 @@ export default function Hero() {
                 "0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(77, 141, 255, 0.18)",
             }}
           >
-            <a href="#form" style={{ display: "block", cursor: "pointer" }}>
+            <a href="#form" className="mockup-link">
               <MockupSlot />
               <span className="sr-only">— מעבר לטופס תיאום השיחה</span>
             </a>
