@@ -115,6 +115,7 @@ export default function Hero() {
 
           {/* השטח השמור למוקאפ — לחיץ, מגלגל לטופס */}
           <m.div
+            className="media-frame"
             initial={{ opacity: 0, filter: "blur(4px)", scale: 0.92 }}
             animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
             transition={{ duration: 0.8, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}

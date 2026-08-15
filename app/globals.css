@@ -28,6 +28,14 @@ body {
   color: #ffffff;
 }
 
+/* מסגרת המדיה — במובייל התמונה כמעט מקצה לקצה כדי שהטקסט שבתוכה יהיה קריא */
+@media (max-width: 640px) {
+  .media-frame {
+    margin-inline: -16px !important;
+    border-radius: 12px !important;
+  }
+}
+
 /* תמונת ההירו — ריחוף עדין שמסמן שהיא לחיצה */
 .mockup-link {
   display: block;

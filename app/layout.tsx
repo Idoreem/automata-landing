@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Assistant } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import { copy } from "@/lib/copy";
 import { SITE_URL } from "@/lib/site";
 import MetaPixel from "@/components/MetaPixel";
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
   title: copy.title,
   description: copy.metaDescription,
   alternates: { canonical: "./" },
+  formatDetection: { telephone: false },
   openGraph: {
     title: copy.title,
     description: copy.metaDescription,
@@ -44,6 +46,7 @@ export default function RootLayout({
     <html lang="he" dir="rtl">
       <body className={`${assistant.className} antialiased`}>
         <MetaPixel />
+        <Analytics />
         {children}
         <script
           type="application/ld+json"
