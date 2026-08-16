@@ -166,7 +166,9 @@ export default function LeadForm() {
           id="form"
           style={{
             position: "relative",
-            padding: "clamp(32px, 5vw, 56px) 0 clamp(72px, 10vw, 120px)",
+            // הסקשן מתחיל עכשיו ישר במשפט הדחיפות (הכותרת עברה ל-Pitch),
+            // אז הוא צריך אוויר מלמעלה כמו כל סקשן עצמאי
+            padding: "clamp(64px, 9vw, 100px) 0 clamp(72px, 10vw, 120px)",
             background: "var(--bg-form)",
             scrollMarginTop: 40,
           }}
@@ -190,44 +192,6 @@ export default function LeadForm() {
               zIndex: 1,
             }}
           >
-            <m.h2
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 0.6 }}
-              style={{
-                fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)",
-                fontWeight: 800,
-                color: "#ffffff",
-                lineHeight: 1.3,
-                textAlign: "center",
-                marginBottom: 16,
-              }}
-            >
-              {form.h2line1}
-              <br />
-              {form.h2line2}
-            </m.h2>
-
-            <m.p
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              style={{
-                fontSize: "clamp(1rem, 1.8vw, 1.18rem)",
-                color: "#aab4c8",
-                lineHeight: 1.85,
-                textAlign: "center",
-                marginBottom: 26,
-                whiteSpace: "pre-line",
-                maxWidth: 640,
-                marginInline: "auto",
-              }}
-            >
-              {form.subtext}
-            </m.p>
-
             <m.p
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}

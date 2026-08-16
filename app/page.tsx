@@ -1,5 +1,6 @@
 import ScrollToTop from "@/components/ScrollToTop";
 import Hero from "@/components/Hero";
+import Pitch from "@/components/Pitch";
 import SocialProof from "@/components/SocialProof";
 import LeadForm from "@/components/LeadForm";
 import StickyCta from "@/components/StickyCta";
@@ -10,6 +11,7 @@ export default function Page() {
     <main>
       <ScrollToTop />
       <Hero />
+      <Pitch />
       <SocialProof />
       <LeadForm />
       <StickyCta />
