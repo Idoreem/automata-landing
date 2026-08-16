@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Assistant } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { copy } from "@/lib/copy";
-import { SITE_URL } from "@/lib/site";
+import { BASE_PATH, SITE_URL } from "@/lib/site";
 import MetaPixel from "@/components/MetaPixel";
 import "./globals.css";
 
@@ -24,13 +24,13 @@ export const metadata: Metadata = {
     siteName: "Automata",
     locale: "he_IL",
     type: "website",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: copy.offerName }],
+    images: [{ url: `${BASE_PATH}/og.png`, width: 1200, height: 630, alt: copy.offerName }],
   },
   twitter: {
     card: "summary_large_image",
     title: copy.title,
     description: copy.metaDescription,
-    images: ["/og.png"],
+    images: [`${BASE_PATH}/og.png`],
   },
 };
 
@@ -56,7 +56,7 @@ export default function RootLayout({
               "@type": "Organization",
               name: "Automata",
               description: "ארכיטקטורה טכנולוגית לעסקים — AI ואוטומציות",
-              url: SITE_URL,
+              url: `${SITE_URL}${BASE_PATH}`,
               founder: [{ "@type": "Person", name: "עידו ראם" }],
             }),
           }}

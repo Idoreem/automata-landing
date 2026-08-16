@@ -23,8 +23,16 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // הדף חי תחת /landing — כך הוא מוגש גם דרך הכתובת המשותפת automata-site.vercel.app/landing
+  basePath: "/landing",
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
+  },
+  async redirects() {
+    return [
+      // הכתובת הישנה בשורש ממשיכה לעבוד
+      { source: "/", destination: "/landing", basePath: false, permanent: false },
+    ];
   },
 };
 

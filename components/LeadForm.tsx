@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LazyMotion, domAnimation, m, MotionConfig } from "framer-motion";
 import { copy } from "@/lib/copy";
+import { BASE_PATH } from "@/lib/site";
 
 type Status = "idle" | "sending" | "error";
 
@@ -30,7 +31,7 @@ export default function LeadForm() {
   }, [router]);
 
   async function submitLead(data: Record<string, FormDataEntryValue>) {
-    const res = await fetch("/api/lead", {
+    const res = await fetch(`${BASE_PATH}/api/lead`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -297,7 +298,7 @@ export default function LeadForm() {
               >
                 {ui.privacyLinkPrefix}
                 <a
-                  href="/privacy"
+                  href={`${BASE_PATH}/privacy`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
