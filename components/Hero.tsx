@@ -64,9 +64,8 @@ export default function Hero() {
           <m.h1
             {...rise(0.05)}
             style={{
-              fontSize: "clamp(2.4rem, 9vw, 5.6rem)",
               fontWeight: 800,
-              lineHeight: 1.05,
+              lineHeight: 1.08,
               letterSpacing: "-0.03em",
               background:
                 "linear-gradient(135deg, #2f6bff 0%, #8ab4ff 50%, #2f6bff 100%)",
@@ -78,7 +77,12 @@ export default function Hero() {
               padding: "0 8px",
             }}
           >
-            {hero.h1}
+            <span style={{ display: "block", fontSize: "clamp(1.9rem, 6.5vw, 4rem)" }}>
+              {hero.h1Line1}
+            </span>
+            <span style={{ display: "block", fontSize: "clamp(2.8rem, 10.5vw, 6.4rem)" }}>
+              {hero.h1Line2}
+            </span>
           </m.h1>
 
           <m.p
@@ -95,7 +99,17 @@ export default function Hero() {
           >
             {beforeHighlight}
             {hasHighlight && (
-              <span style={{ color: "var(--accent)" }}>{hero.subHighlight}</span>
+              <span
+                style={{
+                  color: "var(--accent)",
+                  fontSize: "1.18em",
+                  fontWeight: 800,
+                  display: "inline-block",
+                  marginTop: "0.15em",
+                }}
+              >
+                {hero.subHighlight}
+              </span>
             )}
             {afterHighlight}
           </m.p>
