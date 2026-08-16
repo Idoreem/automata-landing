@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "qa:flow": "node scripts/qa/flow.js",
+    "qa:widths": "node scripts/qa/widths.js",
+    "qa:assets": "node scripts/qa/assets.js"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
@@ -21,6 +24,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "puppeteer-core": "^25.7.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

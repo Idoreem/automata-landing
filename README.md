@@ -1,7 +1,10 @@
 # Automata — דף נחיתה
 
 דף הנחיתה לקמפיין של Automata: **פגישת אפיון AI** ("מפת השעות השרופות").
-עברית, RTL, דארק נייבי. חי בפרודקשן: **https://automata-landing.vercel.app**
+עברית, RTL, דארק נייבי. חי בפרודקשן: **https://automata-site.vercel.app/landing**
+
+> 🤖 **עובדים עם Claude Code?** כל ההקשר, החוקים והמוקשים ב-[CLAUDE.md](./CLAUDE.md) — נטען אוטומטית.
+> בדיקות מובנות: `npm run qa:flow` / `qa:widths` / `qa:assets` (פרטים שם).
 
 ## 🚀 איך עובדים על זה (עידו + מאור)
 
