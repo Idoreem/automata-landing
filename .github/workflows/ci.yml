@@ -17,5 +17,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx tsc --noEmit
+      # build רץ ראשון — הוא זה שמייצר את next-env.d.ts שהטיפוסים תלויים בו
       - run: npm run build
+      - run: npm run typecheck
