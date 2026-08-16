@@ -116,11 +116,34 @@ export default function LeadForm() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...values, consent, notes_hp: hp, ref }),
+      // הבקשה שורדת גם אם הגולש סוגר את הטאב או מנווט החוצה מיד אחרי השליחה
+      keepalive: true,
     });
     if (!res.ok) throw new Error(String(res.status));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  /**
+   * השליחה רצה אחרי שהגולש כבר עבר לדף התודה, ולכן אין למי להציג שגיאה.
+   * במקום זה מנסים שלוש פעמים עם השהיה עולה: אף אחד לא ממתין, אז עדיף
+   * להתעקש מאשר לוותר. הראוט בשרת מחזיר 502 רק אם כל היעדים נפלו, כך
+   * שניסיון חוזר לא ייצור ליד כפול.
+   */
+  async function deliverInBackground() {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        await postLead();
+        return;
+      } catch (err) {
+        if (attempt === 3) {
+          console.error("lead delivery failed after 3 attempts", err);
+          return;
+        }
+        await new Promise((r) => setTimeout(r, attempt * 2000));
+      }
+    }
+  }
+
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (status === "sending") return;
 
@@ -135,17 +158,18 @@ export default function LeadForm() {
     }
 
     setStatus("sending");
+
+    // חתימה לאירוע ה-Lead של הפיקסל, נקבעת לפני המעבר כדי שדף התודה
+    // ימצא אותה. השליחה עצמה כבר לא מעכבת את הגולש.
     try {
-      try {
-        await postLead();
-      } catch {
-        // ניסיון חוזר שקט אחד. מכסה חסימת קצב רגעית או נפילת רשת
-        await new Promise((r) => setTimeout(r, 2500));
-        await postLead();
-      }
-      try {
-        sessionStorage.setItem("lead_submitted", crypto.randomUUID());
-      } catch {}
+      sessionStorage.setItem("lead_submitted", crypto.randomUUID());
+    } catch {}
+
+    // הגולש עובר לדף התודה מיד. ניווט של Next הוא צד-לקוח, כך שהקשר
+    // ה-JS שורד את המעבר וה-fetch ממשיך לרוץ ברקע.
+    void deliverInBackground();
+
+    try {
       router.push("/thanks");
     } catch {
       setStatus("error");
