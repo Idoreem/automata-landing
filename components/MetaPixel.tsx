@@ -5,14 +5,16 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 /**
- * פיקסל מטא - מוכן להדלקה.
- * להפעלה: מגדירים ב-Vercel משתנה סביבה NEXT_PUBLIC_META_PIXEL_ID עם מזהה הפיקסל,
- * ועושים Redeploy. בלי המשתנה - הקומפוננטה לא מרנדרת כלום.
+ * פיקסל מטא.
  *
  * מה נורה: PageView בכל טעינה/ניווט, ואירוע Lead בכניסה לדף התודה
  * (ראה PixelLeadEvent בתחתית הקובץ - משולב בדף התודה).
+ *
+ * המזהה יושב כאן ולא במשתנה סביבה בכוונה: התחילית NEXT_PUBLIC_ נצרבת
+ * לקוד שרץ בדפדפן, כלומר המזהה גלוי לכל גולש בכל מקרה ואין בו סוד.
+ * להחלפה בלי נגיעה בקוד אפשר להגדיר NEXT_PUBLIC_META_PIXEL_ID ב-Vercel.
  */
-const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "1628159481563841";
 
 declare global {
   interface Window {
