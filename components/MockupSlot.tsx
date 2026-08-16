@@ -10,7 +10,7 @@ export default function MockupSlot() {
   return (
     <Image
       src={mockup}
-      alt="עידו ראם — פגישת אפיון AI של 30 דקות לעסק שלך | Automata"
+      alt="פגישת אפיון AI לעסק שלך ב-30 דקות, ללא עלות — אוטומציות, בקרה וצמיחה | Automata"
       priority
       placeholder="blur"
       sizes="(max-width: 900px) 92vw, 680px"
