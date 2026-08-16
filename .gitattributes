@@ -1,0 +1,12 @@
+# נורמליזציה של סופי שורות — שלא יהיו דיפים מזויפים בין Windows ל-Mac
+* text=auto eol=lf
+
+# בינאריים — לא לגעת
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.mp4 binary
