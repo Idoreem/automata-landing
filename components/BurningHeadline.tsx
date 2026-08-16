@@ -34,6 +34,8 @@ type Bill = {
   charred: boolean;
   fromLeft: boolean;
   notches: number[];
+  flameIdx: number[];
+  flameSeeds: number[];
   age: number;
 };
 
@@ -132,40 +134,93 @@ export default function BurningHeadline() {
       if (bills.length >= MAX_BILLS) return;
       const hostRect = host.getBoundingClientRect();
       const lineRect = line.getBoundingClientRect();
-      const w = 34 + Math.random() * 22;
+      const w = 36 + Math.random() * 22;
       bills.push({
         baseX: lineRect.left - hostRect.left + Math.random() * lineRect.width,
         y: lineRect.bottom - hostRect.top - lineRect.height * 0.22,
-        vy: (charred ? 0.34 : 0.42) + Math.random() * 0.3,
+        vy: (charred ? 0.3 : 0.36) + Math.random() * 0.24,
         swayAmp: 10 + Math.random() * 16,
-        swayFreq: 0.45 + Math.random() * 0.4,
+        swayFreq: 0.4 + Math.random() * 0.35,
         swayPhase: Math.random() * Math.PI * 2,
         rotBase: (Math.random() - 0.5) * 0.5,
-        rotAmp: 0.22 + Math.random() * 0.2,
-        rotFreq: 0.3 + Math.random() * 0.3,
+        rotAmp: 0.2 + Math.random() * 0.18,
+        rotFreq: 0.26 + Math.random() * 0.26,
         rotPhase: Math.random() * Math.PI * 2,
         w,
-        burn: charred ? 0.32 + Math.random() * 0.26 : 0.04,
-        burnRate: charred ? 0 : 0.0022 + Math.random() * 0.0014,
+        burn: charred ? 0.32 + Math.random() * 0.26 : 0.03,
+        // שריפה איטית: השטר נאכל לאורך כל הנפילה, לא בבת אחת
+        burnRate: charred ? 0 : 0.00007 + Math.random() * 0.00004,
         charred,
         fromLeft: Math.random() < 0.5,
         notches: Array.from({ length: 7 }, () => Math.random()),
+        // 3 נקודות עיגון ללשונות האש לאורך קו הבעירה
+        flameIdx: [1, 3, 5].map((i) => Math.min(6, i + Math.floor(Math.random() * 2))),
+        flameSeeds: Array.from({ length: 3 }, () => Math.random() * 10),
         age: 0,
       });
     };
 
-    const drawBill = (b: Bill, now: number) => {
+    // לשון אש בודדת: ליבה לבנה-צהובה, גוף כתום, קצה אדום שנמוג. תמיד פונה מעלה
+    const drawFlame = (wx: number, wy: number, hf: number, seed: number, now: number) => {
+      const sway =
+        Math.sin(now / 150 + seed * 9) * hf * 0.16 +
+        Math.sin(now / 61 + seed * 3.7) * hf * 0.08;
+
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+
+      // הילת חום רכה
+      const glow = ctx.createRadialGradient(wx, wy - hf * 0.3, 0, wx, wy - hf * 0.3, hf * 1.2);
+      glow.addColorStop(0, "rgba(255, 118, 28, 0.26)");
+      glow.addColorStop(1, "rgba(255, 60, 10, 0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(wx, wy - hf * 0.3, hf * 1.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // גוף הלהבה
+      const body = ctx.createLinearGradient(wx, wy, wx, wy - hf);
+      body.addColorStop(0, "rgba(255, 236, 168, 0.92)");
+      body.addColorStop(0.45, "rgba(255, 156, 38, 0.8)");
+      body.addColorStop(1, "rgba(255, 58, 12, 0)");
+      ctx.beginPath();
+      ctx.moveTo(wx - hf * 0.22, wy);
+      ctx.quadraticCurveTo(wx - hf * 0.27, wy - hf * 0.46, wx + sway, wy - hf);
+      ctx.quadraticCurveTo(wx + hf * 0.27, wy - hf * 0.46, wx + hf * 0.22, wy);
+      ctx.closePath();
+      ctx.fillStyle = body;
+      ctx.fill();
+
+      // ליבה חמה
+      const core = ctx.createLinearGradient(wx, wy, wx, wy - hf * 0.55);
+      core.addColorStop(0, "rgba(255, 250, 222, 0.9)");
+      core.addColorStop(1, "rgba(255, 204, 96, 0)");
+      ctx.beginPath();
+      ctx.moveTo(wx - hf * 0.1, wy);
+      ctx.quadraticCurveTo(wx - hf * 0.12, wy - hf * 0.26, wx + sway * 0.5, wy - hf * 0.55);
+      ctx.quadraticCurveTo(wx + hf * 0.12, wy - hf * 0.26, wx + hf * 0.1, wy);
+      ctx.closePath();
+      ctx.fillStyle = core;
+      ctx.fill();
+
+      ctx.restore();
+    };
+
+    const drawBill = (b: Bill, now: number, mode: "off" | "fire" | "ember") => {
       const h = b.w * 0.46;
       const t = now / 1000;
       const x = b.baseX + Math.sin(t * b.swayFreq * Math.PI * 2 + b.swayPhase) * b.swayAmp;
       const rot =
         b.rotBase + Math.sin(t * b.rotFreq * Math.PI * 2 + b.rotPhase) * b.rotAmp;
 
+      // בוער באמת רק כשהאש דולקת; אחרי כיבוי הכל חרוך ושקט
+      const burningVisual = mode === "fire" && !b.charred && b.burn < 0.96;
+
       // דהייה בכניסה, וגם לקראת תחתית אזור הנפילה
       const zoneH = canvas.height / dpr;
       const fadeIn = Math.min(1, b.age / 500);
       const fadeOut = Math.min(1, Math.max(0, (zoneH - b.y) / 90));
-      const ashFade = b.burn >= 0.97 ? Math.max(0, (1 - b.burn) / 0.03) : 1;
+      const ashFade = b.burn >= 0.95 ? Math.max(0, (1 - b.burn) / 0.05) : 1;
       const alpha = 0.92 * fadeIn * fadeOut * ashFade;
       if (alpha <= 0.01) return;
 
@@ -230,7 +285,7 @@ export default function BurningHeadline() {
           if (i === 0) ctx.moveTo(burnX + jag * dir, yy);
           else ctx.lineTo(burnX + jag * dir, yy);
         }
-        if (!b.charred && b.burn < 0.96) {
+        if (burningVisual) {
           const flick = 0.75 + 0.25 * Math.sin(now / 90 + b.swayPhase * 7);
           ctx.strokeStyle = `rgba(255, 122, 30, ${0.9 * flick})`;
           ctx.lineWidth = 1.7;
@@ -249,6 +304,36 @@ export default function BurningHeadline() {
       }
 
       ctx.restore();
+
+      // הלהבות: מצוירות במרחב העולם כדי שיפנו תמיד מעלה, גם כשהשטר מסתובב
+      if (burningVisual && b.burn > 0.04) {
+        const dir = b.fromLeft ? 1 : -1;
+        const edge = b.fromLeft ? -b.w / 2 : b.w / 2;
+        const burnX = edge + dir * b.burn * (b.w + 6);
+        const steps = b.notches.length;
+        const cos = Math.cos(rot);
+        const sin = Math.sin(rot);
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        for (let f = 0; f < b.flameIdx.length; f++) {
+          const i = b.flameIdx[f];
+          const seed = b.flameSeeds[f];
+          const yy = -h / 2 + (h + 2) * (i / steps) - 1;
+          const jag = (b.notches[Math.min(i, steps - 1)] - 0.5) * 7;
+          const px = burnX + jag * dir;
+          const wx = x + px * cos - yy * sin;
+          const wy = b.y + px * sin + yy * cos;
+
+          // גובה הלהבה נושם: שני גלים בקצבים שונים במקום ריצוד מכני
+          const breathe =
+            (0.62 + 0.38 * (0.5 + 0.5 * Math.sin(now / 130 + seed * 5))) *
+            (0.82 + 0.18 * Math.sin(now / 53 + seed * 2.3));
+          const hf = (7 + b.w * 0.16) * breathe;
+          drawFlame(wx, wy + 1.5, hf, seed, now);
+        }
+        ctx.restore();
+      }
     };
 
     let raf = 0;
@@ -272,7 +357,7 @@ export default function BurningHeadline() {
       }
 
       sinceSpawn += dt;
-      const interval = mode === "fire" ? 480 : 1500;
+      const interval = mode === "fire" ? 620 : 1600;
       if (mode !== "off" && sinceSpawn > interval && !document.hidden) {
         sinceSpawn = 0;
         spawn(mode === "ember");
@@ -285,14 +370,17 @@ export default function BurningHeadline() {
         const b = bills[i];
         b.age += dt;
         b.y += b.vy * (dt / 16);
-        if (!b.charred) b.burn = Math.min(1, b.burn + b.burnRate * dt);
+        // הבעירה מתקדמת רק כשהאש דולקת. כשהיא כבויה - הכל קפוא וחרוך
+        if (!b.charred && mode === "fire") {
+          b.burn = Math.min(1, b.burn + b.burnRate * dt);
+        }
 
         const zoneH = canvas.height / dpr;
         if (b.y > zoneH + 30 || b.burn >= 1) {
           bills.splice(i, 1);
           continue;
         }
-        drawBill(b, now);
+        drawBill(b, now, mode);
       }
 
       raf = requestAnimationFrame(tick);
