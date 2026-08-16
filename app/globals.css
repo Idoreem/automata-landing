@@ -224,25 +224,7 @@ body {
   }
 }
 
-/* ===== הכותרת הבוערת ===== */
-.burn-host {
-  position: relative;
-  display: block;
-  width: 100%;
-  margin: 0 auto 26px;
-}
-
-/* הדולרים נופלים מאחורי הטקסט, שהקריאוּת לא תיפגע */
-.burn-canvas {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* כל מה שיושב מתחת לכותרת ונחצה על ידי הדולרים הנופלים */
+/* ===== הכותרת הראשית ===== */
 .hero-layer {
   position: relative;
   z-index: 1;
@@ -271,96 +253,17 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
-/* שורה שנייה: הגיבורה. שתי שכבות זו על זו למעבר רך אל האש */
+/* שורה שנייה: הגדולה, בכחול המותג */
 .hero-h1-b {
-  position: relative;
   display: inline-block;
   font-size: clamp(3rem, 11.8vw, 7rem);
   line-height: 1.06;
   letter-spacing: -0.015em;
   padding: 0 0.06em;
-}
-
-.burn-cool,
-.burn-hot {
+  background-image: linear-gradient(135deg, #2f6bff 0%, #8ab4ff 50%, #2f6bff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  transition: opacity 1.1s ease;
-}
-
-.burn-cool {
-  background-image: linear-gradient(135deg, #2f6bff 0%, #8ab4ff 50%, #2f6bff 100%);
-}
-
-.burn-hot {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  /* אדום דומיננטי עם אומברה כתום בוער בקצה העליון */
-  background-image: linear-gradient(
-    180deg,
-    #ffb547 0%,
-    #ff7a1f 24%,
-    #f8430f 48%,
-    #dd1b06 72%,
-    #8f0d04 100%
-  );
-  background-size: 100% 240%;
-  background-position: 0% 12%;
-}
-
-.hero-h1-b.is-lit .burn-cool {
-  opacity: 0;
-}
-
-.hero-h1-b.is-lit .burn-hot {
-  opacity: 1;
-  animation: heat-rise 4.5s ease-in-out infinite alternate,
-    ember-glow 2.6s ease-in-out infinite;
-}
-
-/* זרימת החום בתוך האותיות */
-@keyframes heat-rise {
-  from {
-    background-position: 0% 6%;
-  }
-  to {
-    background-position: 0% 62%;
-  }
-}
-
-/* ריצוד הלהבה סביב האותיות: זוהר אדום עם נגיעות כתומות */
-@keyframes ember-glow {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 15px rgba(248, 62, 16, 0.52))
-      drop-shadow(0 0 34px rgba(200, 24, 6, 0.3));
-  }
-  28% {
-    filter: drop-shadow(0 0 23px rgba(255, 120, 36, 0.6))
-      drop-shadow(0 0 48px rgba(226, 34, 8, 0.38));
-  }
-  55% {
-    filter: drop-shadow(0 0 12px rgba(240, 52, 14, 0.46))
-      drop-shadow(0 0 27px rgba(190, 20, 5, 0.26));
-  }
-  78% {
-    filter: drop-shadow(0 0 20px rgba(255, 104, 30, 0.56))
-      drop-shadow(0 0 42px rgba(214, 28, 8, 0.34));
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .burn-cool,
-  .burn-hot {
-    transition: none;
-  }
-
-  .hero-h1-b.is-lit .burn-hot {
-    animation: none;
-    filter: drop-shadow(0 0 15px rgba(248, 62, 16, 0.45));
-  }
 }
 
 /* מסגרת המדיה. במובייל התמונה כמעט מקצה לקצה כדי שהטקסט שבתוכה יהיה קריא */
@@ -683,19 +586,19 @@ body {
   box-shadow: 0 8px 32px rgba(77, 141, 255, 0.4);
 }
 
-/* וריאנט משני: מתאר בוער, שלא יתחרה בכפתור הראשי */
+/* וריאנט משני: מתאר בלבד, שלא יתחרה בכפתור הראשי */
 .cta-ghost {
-  background: rgba(255, 122, 31, 0.09);
-  color: #ffd9a8;
-  border: 1px solid rgba(255, 122, 31, 0.55);
-  box-shadow: 0 4px 22px rgba(255, 90, 20, 0.14);
+  background: rgba(77, 141, 255, 0.08);
+  color: #cfe0ff;
+  border: 1px solid rgba(77, 141, 255, 0.5);
+  box-shadow: 0 4px 22px rgba(77, 141, 255, 0.12);
 }
 
 .cta-ghost:hover {
-  background: rgba(255, 122, 31, 0.16);
-  color: #fff0dc;
-  border-color: rgba(255, 150, 60, 0.8);
-  box-shadow: 0 8px 30px rgba(255, 90, 20, 0.26);
+  background: rgba(77, 141, 255, 0.16);
+  color: #ffffff;
+  border-color: rgba(138, 180, 255, 0.85);
+  box-shadow: 0 8px 30px rgba(77, 141, 255, 0.28);
 }
 
 .cta-btn:active {

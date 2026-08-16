@@ -2,7 +2,6 @@
 
 import { LazyMotion, domAnimation, m, MotionConfig } from "framer-motion";
 import { copy } from "@/lib/copy";
-import BurningHeadline from "./BurningHeadline";
 import MockupSlot from "./MockupSlot";
 
 // אנימציית הכניסה של הרפרנס: blur + fade + עלייה, בהדרגה
@@ -62,9 +61,14 @@ export default function Hero() {
         />
 
         <div style={{ position: "relative", zIndex: 1, maxWidth: 900, width: "100%" }}>
-          <m.div {...rise(0.05)}>
-            <BurningHeadline />
-          </m.div>
+          <m.h1
+            {...rise(0.05)}
+            className="hero-h1"
+            style={{ margin: "0 auto 26px" }}
+          >
+            <span className="hero-h1-a">{hero.h1Line1}</span>
+            <span className="hero-h1-b">{hero.h1Line2}</span>
+          </m.h1>
 
           <m.p
             {...rise(0.2)}
