@@ -68,6 +68,7 @@ export default function Hero() {
 
           <m.p
             {...rise(0.2)}
+            id="hero-sub"
             className="hero-layer"
             style={{
               fontSize: "clamp(1.35rem, 4.4vw, 2rem)",

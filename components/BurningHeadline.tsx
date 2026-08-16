@@ -39,9 +39,8 @@ type Bill = {
   age: number;
 };
 
-// כמה השטר נופל מתחת לכותרת לפני שהוא נעלם
-const FALL_ZONE = 340;
-const MAX_BILLS = 7;
+// מקסימום שטרות חיים בו-זמנית. מעט ובכוונה
+const MAX_BILLS = 4;
 
 // עוזר לציור מלבן מעוגל, עם נפילה לאחור לדפדפנים בלי roundRect
 function rrect(
@@ -117,6 +116,10 @@ export default function BurningHeadline() {
     window.addEventListener("scroll", update, { passive: true });
     update();
 
+    // אם הגולש כבר גלל לפני שהקוד נטען, המגע הראשון כבר קרה ואבד לנו.
+    // הגלילה עצמה היא הראיה, אז מדליקים גם במקרה הזה
+    if (window.scrollY > 0) onFirstTouch();
+
     return () => {
       if (igniteTimer) clearTimeout(igniteTimer);
       INTERACTIONS.forEach((ev) => window.removeEventListener(ev, onFirstTouch));
@@ -134,11 +137,22 @@ export default function BurningHeadline() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // גבול הנפילה: השטרות נמוגים בגובה השורה השנייה של תת-הכותרת
+    // ("אתה משלם משכורות מלאות."). נמדד מהדף עצמו, לא מספר קבוע
     let dpr = 1;
     const resize = () => {
       dpr = Math.min(2, window.devicePixelRatio || 1);
       const r = host.getBoundingClientRect();
-      const h = r.height + FALL_ZONE;
+
+      let fallZone = 110;
+      const sub = document.getElementById("hero-sub");
+      if (sub) {
+        const subRect = sub.getBoundingClientRect();
+        const lineH = parseFloat(getComputedStyle(sub).lineHeight) || 32;
+        fallZone = Math.max(60, subRect.top - r.bottom + lineH * 2);
+      }
+
+      const h = r.height + fallZone;
       canvas.width = Math.round(r.width * dpr);
       canvas.height = Math.round(h * dpr);
       canvas.style.width = `${r.width}px`;
@@ -167,8 +181,8 @@ export default function BurningHeadline() {
         rotPhase: Math.random() * Math.PI * 2,
         w,
         burn: charred ? 0.32 + Math.random() * 0.26 : 0.03,
-        // שריפה איטית: השטר נאכל לאורך כל הנפילה, לא בבת אחת
-        burnRate: charred ? 0 : 0.00007 + Math.random() * 0.00004,
+        // מכויל למסע: השטר נאכל בהדרגה ומגיע שרוף לשורה השנייה של תת-הכותרת
+        burnRate: charred ? 0 : 0.00016 + Math.random() * 0.00007,
         charred,
         fromLeft: Math.random() < 0.5,
         notches: Array.from({ length: 7 }, () => Math.random()),
@@ -238,7 +252,7 @@ export default function BurningHeadline() {
       // דהייה בכניסה, וגם לקראת תחתית אזור הנפילה
       const zoneH = canvas.height / dpr;
       const fadeIn = Math.min(1, b.age / 500);
-      const fadeOut = Math.min(1, Math.max(0, (zoneH - b.y) / 90));
+      const fadeOut = Math.min(1, Math.max(0, (zoneH - b.y) / 38));
       const ashFade = b.burn >= 0.95 ? Math.max(0, (1 - b.burn) / 0.05) : 1;
       const alpha = 0.92 * fadeIn * fadeOut * ashFade;
       if (alpha <= 0.01) return;
@@ -376,7 +390,7 @@ export default function BurningHeadline() {
       }
 
       sinceSpawn += dt;
-      const interval = mode === "fire" ? 1200 : 3000;
+      const interval = mode === "fire" ? 2400 : 6000;
       if (mode !== "off" && sinceSpawn > interval && !document.hidden) {
         sinceSpawn = 0;
         spawn(mode === "ember");
