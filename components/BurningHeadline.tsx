@@ -41,7 +41,7 @@ type Bill = {
 
 // כמה השטר נופל מתחת לכותרת לפני שהוא נעלם
 const FALL_ZONE = 340;
-const MAX_BILLS = 14;
+const MAX_BILLS = 7;
 
 // עוזר לציור מלבן מעוגל, עם נפילה לאחור לדפדפנים בלי roundRect
 function rrect(
@@ -74,7 +74,8 @@ export default function BurningHeadline() {
   const lineRef = useRef<HTMLSpanElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // הצתה ראשונית + כיבוי/הצתה לפי מיקום הגלילה, עם היסטרזיס נגד ריצודים
+  // ההצתה קורית רק חצי שנייה אחרי המגע הראשון של הגולש בדף.
+  // לפני כן - שום דבר לא בוער. ואז: כיבוי בגלילה למטה, הצתה מחדש בראש הדף.
   useEffect(() => {
     if (reduced) {
       setLit(true);
@@ -82,6 +83,7 @@ export default function BurningHeadline() {
     }
     let ignited = false;
     let atTop = true;
+    let igniteTimer: ReturnType<typeof setTimeout> | undefined;
 
     const update = () => {
       const y = window.scrollY;
@@ -92,15 +94,32 @@ export default function BurningHeadline() {
       setLit((prev) => (prev === next ? prev : next));
     };
 
-    const t = setTimeout(() => {
-      ignited = true;
-      update();
-    }, 1050);
+    const INTERACTIONS: (keyof WindowEventMap)[] = [
+      "pointerdown",
+      "touchstart",
+      "mousemove",
+      "wheel",
+      "scroll",
+      "keydown",
+    ];
 
+    const onFirstTouch = () => {
+      INTERACTIONS.forEach((ev) => window.removeEventListener(ev, onFirstTouch));
+      igniteTimer = setTimeout(() => {
+        ignited = true;
+        update();
+      }, 500);
+    };
+
+    INTERACTIONS.forEach((ev) =>
+      window.addEventListener(ev, onFirstTouch, { passive: true })
+    );
     window.addEventListener("scroll", update, { passive: true });
     update();
+
     return () => {
-      clearTimeout(t);
+      if (igniteTimer) clearTimeout(igniteTimer);
+      INTERACTIONS.forEach((ev) => window.removeEventListener(ev, onFirstTouch));
       window.removeEventListener("scroll", update);
     };
   }, [reduced]);
@@ -134,7 +153,7 @@ export default function BurningHeadline() {
       if (bills.length >= MAX_BILLS) return;
       const hostRect = host.getBoundingClientRect();
       const lineRect = line.getBoundingClientRect();
-      const w = 36 + Math.random() * 22;
+      const w = 27 + Math.random() * 16;
       bills.push({
         baseX: lineRect.left - hostRect.left + Math.random() * lineRect.width,
         y: lineRect.bottom - hostRect.top - lineRect.height * 0.22,
@@ -357,7 +376,7 @@ export default function BurningHeadline() {
       }
 
       sinceSpawn += dt;
-      const interval = mode === "fire" ? 620 : 1600;
+      const interval = mode === "fire" ? 1200 : 3000;
       if (mode !== "off" && sinceSpawn > interval && !document.hidden) {
         sinceSpawn = 0;
         spawn(mode === "ember");
