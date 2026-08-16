@@ -1,3 +1,4 @@
+import ScrollToTop from "@/components/ScrollToTop";
 import Hero from "@/components/Hero";
 import SocialProof from "@/components/SocialProof";
 import LeadForm from "@/components/LeadForm";
@@ -7,6 +8,7 @@ import Footer from "@/components/Footer";
 export default function Page() {
   return (
     <main>
+      <ScrollToTop />
       <Hero />
       <SocialProof />
       <LeadForm />

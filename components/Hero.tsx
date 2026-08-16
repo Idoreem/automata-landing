@@ -32,7 +32,7 @@ export default function Hero() {
           justifyContent: "center",
           alignItems: "center",
           textAlign: "center",
-          padding: "60px 24px 40px",
+          padding: "48px 24px 12px",
           overflow: "hidden",
         }}
       >
@@ -82,15 +82,7 @@ export default function Hero() {
           >
             {beforeHighlight}
             {hasHighlight && (
-              <span
-                style={{
-                  color: "var(--accent)",
-                  fontSize: "1.18em",
-                  fontWeight: 800,
-                  display: "inline-block",
-                  marginTop: "0.15em",
-                }}
-              >
+              <span style={{ color: "var(--accent)", fontWeight: 800 }}>
                 {hero.subHighlight}
               </span>
             )}

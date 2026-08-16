@@ -158,7 +158,7 @@ export default function LeadForm() {
           id="form"
           style={{
             position: "relative",
-            padding: "clamp(80px, 12vw, 140px) 0",
+            padding: "clamp(32px, 5vw, 56px) 0 clamp(72px, 10vw, 120px)",
             background: "var(--bg-form)",
             scrollMarginTop: 40,
           }}
