@@ -28,41 +28,16 @@ body {
   color: #ffffff;
 }
 
-/* ===== טופס רב-שלבי ===== */
-.step-head {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 26px;
+/* הדגשה אדומה חזקה בתוך משפט. יחס ניגודיות 5.6:1 מול var(--bg-form) */
+.hot-red {
+  color: #ff3b30;
+  font-weight: 900;
+  text-shadow:
+    0 0 18px rgba(255, 59, 48, 0.5),
+    0 0 42px rgba(255, 59, 48, 0.22);
 }
 
-.step-bar {
-  display: flex;
-  gap: 6px;
-  flex: 1;
-}
-
-.step-seg {
-  height: 4px;
-  flex: 1;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.13);
-  transition: background 0.4s ease, box-shadow 0.4s ease;
-}
-
-.step-seg.on {
-  background: var(--accent);
-  box-shadow: 0 0 12px rgba(77, 141, 255, 0.5);
-}
-
-.step-count {
-  font-size: 0.78rem;
-  color: #8e99ad;
-  font-weight: 600;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
+/* ===== טופס רב-שלבי (בלי מחוון שלבים גלוי) ===== */
 .step-label {
   display: block;
   font-size: 0.9rem;
@@ -516,53 +491,67 @@ body {
   }
 }
 
-.sp-photos {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+/* צילומי הוואטסאפ: מסונני עמודות (masonry) כדי שכל צילום יישאר ביחס
+   הטבעי שלו. חיתוך היה הופך הודעה קריאה לתמונה דקורטיבית. */
+.sp-shots {
+  columns: 1;
+  column-gap: 16px;
   max-width: 920px;
-  margin: 28px auto 0;
+  margin: 30px auto 0;
   padding: 0 24px;
 }
 
 @media (min-width: 900px) {
-  .sp-photos {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px;
+  .sp-shots {
+    columns: 2;
   }
 }
 
-.sp-photo {
-  aspect-ratio: 4 / 5;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid rgba(77, 141, 255, 0.18);
-  position: relative;
-  background: radial-gradient(ellipse 160px 200px at 50% 40%, rgba(77, 141, 255, 0.12) 0%, transparent 70%),
-    linear-gradient(180deg, #071021 0%, #030711 100%);
+.sp-shot {
+  break-inside: avoid;
+  margin: 0 0 16px;
+  padding: 10px;
+  background: var(--card);
+  border: 1px solid rgba(77, 141, 255, 0.25);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 24px rgba(77, 141, 255, 0.07);
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
 }
 
-.sp-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+@media (hover: hover) {
+  .sp-shot:hover {
+    transform: translateY(-3px);
+    border-color: rgba(77, 141, 255, 0.5);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), 0 0 34px rgba(77, 141, 255, 0.12);
+  }
 }
 
-.sp-ghost {
-  position: absolute;
-  inset: 0;
+.sp-shot figcaption {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: #78828f;
-  font-size: 0.85rem;
-  font-weight: 600;
-  background-image: linear-gradient(rgba(77, 141, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(77, 141, 255, 0.045) 1px, transparent 1px);
-  background-size: 32px 32px;
+  gap: 8px;
+  padding: 6px 8px 12px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #ffffff;
+}
+
+.sp-shot img {
+  border-radius: 10px;
+}
+
+.sp-wa {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: #25d366;
+}
+
+.sp-wa svg {
+  width: 18px;
+  height: 18px;
 }
 
 .cta-btn {

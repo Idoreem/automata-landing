@@ -70,6 +70,12 @@ export default function LeadForm() {
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
 
+  // "וישרדו את מהפכת הAI" יוצא באדום בתוך משפט הדחיפות
+  const hasPreHighlight = form.preCard.includes(form.preCardHighlight);
+  const [preCardBefore, preCardAfter] = hasPreHighlight
+    ? form.preCard.split(form.preCardHighlight)
+    : [form.preCard, ""];
+
   useEffect(() => {
     router.prefetch("/thanks");
   }, [router]);
@@ -104,10 +110,12 @@ export default function LeadForm() {
   }
 
   async function postLead() {
+    // ?ref= מהמודעה עובר ל-CRM כדי שאפשר יהיה לייחס ליד למקור
+    const ref = new URLSearchParams(window.location.search).get("ref") ?? "";
     const res = await fetch(`${BASE_PATH}/api/lead`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...values, consent, notes_hp: hp }),
+      body: JSON.stringify({ ...values, consent, notes_hp: hp, ref }),
     });
     if (!res.ok) throw new Error(String(res.status));
   }
@@ -235,7 +243,11 @@ export default function LeadForm() {
                 whiteSpace: "pre-line",
               }}
             >
-              {form.preCard}
+              {preCardBefore}
+              {hasPreHighlight && (
+                <span className="hot-red">{form.preCardHighlight}</span>
+              )}
+              {preCardAfter}
             </m.p>
 
             <m.div
@@ -254,18 +266,7 @@ export default function LeadForm() {
                 marginInline: "auto",
               }}
             >
-              {/* מד התקדמות */}
-              <div className="step-head">
-                <div className="step-bar" aria-hidden>
-                  {STEPS.map((s, i) => (
-                    <span key={s.key} className={`step-seg${i <= step ? " on" : ""}`} />
-                  ))}
-                </div>
-                <span className="step-count">
-                  {form.stepLabel} {step + 1} {form.stepOf} {STEPS.length}
-                </span>
-              </div>
-
+              {/* בלי מד התקדמות: הגולש לא אמור לראות שיש כאן שלבים בכלל */}
               <form onSubmit={handleSubmit} autoComplete="on" noValidate>
                 {/* פיתיון לבוטים */}
                 <input

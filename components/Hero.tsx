@@ -162,9 +162,41 @@ export default function Hero() {
             </a>
           </m.div>
 
+          {/* מה קורה בפגישה, ואחריו ניסוח CTA שני למי שהזווית של
+              "להישאר רלוונטי" מדברת אליו יותר מ"לשרוף כסף" */}
           <m.p
-            {...rise(0.72)}
-            style={{ fontSize: "0.85rem", color: "#78828f", marginTop: 14 }}
+            {...rise(0.7)}
+            style={{
+              fontSize: "clamp(0.95rem, 1.8vw, 1.15rem)",
+              color: "#aab4c8",
+              lineHeight: 1.7,
+              maxWidth: 560,
+              margin: "26px auto 18px",
+            }}
+          >
+            {hero.explainer}
+          </m.p>
+
+          <m.div
+            {...rise(0.78)}
+            style={{ display: "flex", justifyContent: "center" }}
+          >
+            <a
+              href="#form"
+              className="cta-btn cta-ghost"
+              style={{
+                fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)",
+                padding: "clamp(13px, 1.8vw, 17px) clamp(22px, 4vw, 40px)",
+                maxWidth: "92vw",
+              }}
+            >
+              {hero.secondaryCta}
+            </a>
+          </m.div>
+
+          <m.p
+            {...rise(0.86)}
+            style={{ fontSize: "0.85rem", color: "#78828f", marginTop: 16 }}
           >
             {hero.microcopy}
           </m.p>

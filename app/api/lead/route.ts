@@ -1,6 +1,21 @@
-// יעד הלידים: Webhook של Make (או כל יעד אחר) דרך משתנה סביבה.
-// הגדרה ב-Vercel: Settings → Environment Variables → LEAD_WEBHOOK_URL
-// כל עוד המשתנה לא מוגדר - הליד נרשם ללוג בלבד ולא נשמר. אסור להריץ טראפיק ככה.
+// יעדי הלידים:
+//
+// 1. ה-CRM של מאור. יעד ברירת המחדל, מוגדר מראש - עובד בלי משתני סביבה.
+//    אותה נקודת קצה ואותו טוקן ציבורי שהאתר הראשי משתמש בהם (js/lead-crm.js),
+//    ולכן הליד נוחת באותו מקום בדיוק כמו לידים מעמוד הקמפיינר.
+//    לשינוי: LEAD_CRM_URL / LEAD_CRM_TOKEN. לכיבוי: LEAD_CRM_URL=off
+// 2. Webhook נוסף (Make/CRM אחר), אופציונלי, דרך LEAD_WEBHOOK_URL.
+//
+// הליד נחשב שנשלח אם לפחות יעד אחד קלט אותו. כישלון מלא מוחזר כ-502
+// והלקוח מנסה שוב פעם אחת. כל כישלון נרשם ללוג עם הליד המלא לשחזור.
+
+// טוקן ציבורי של ה-webhook, מיועד מלכתחילה לצד-לקוח (מופיע גלוי ב-js/lead-crm.js
+// של האתר). לא סוד, ולכן ברירת מחדל בקוד ולא משתנה סביבה חובה.
+const CRM_URL =
+  process.env.LEAD_CRM_URL ?? "https://maor-s-crm.vercel.app/api/webhooks/leads";
+const CRM_TOKEN =
+  process.env.LEAD_CRM_TOKEN ??
+  "lead_6df41e0f263e591c83811638cc8e55a95ad551ea793d9c10";
 
 // הגבלת קצב בסיסית לכל אינסטנס (סרברלס - מתאפס בין אינסטנסים; שכבת הגנה ראשונה בלבד).
 // התקרה נדיבה בכוונה: גולשי מובייל מקמפיין חולקים IP דרך CGNAT של המפעיל.
@@ -80,38 +95,69 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "consent required" }, { status: 400 });
   }
 
+  // ?ref= מהכתובת מאפשר לתייג ליד לפי מודעה. אותה מוסכמה כמו באתר הראשי.
+  const ref = defuse(str(data.ref, 120)) || "automata-landing";
+
   const payload = {
     name,
     email,
     phone: phoneRaw,
     consent: true,
-    // ליד שנתפס בפיתיון לא נזרק - עובר עם דגל, ומסוננים ב-Make.
+    // ליד שנתפס בפיתיון לא נזרק - עובר עם דגל, ומסוננים ביעד.
     // ככה מילוי אוטומטי שהפעיל את הפיתיון בטעות לא מעלים ליד אמיתי.
     suspected_spam: suspectedSpam,
     source: "automata-landing",
+    ref,
     submittedAt: new Date().toISOString(),
   };
 
-  const webhook = process.env.LEAD_WEBHOOK_URL;
-  if (webhook) {
+  // מבנה הפיילוד של ה-CRM שונה מהפיילוד הגנרי: firstName במקום name, וטוקן.
+  const crmPayload = {
+    token: CRM_TOKEN,
+    firstName: name.slice(0, 100),
+    phone: phoneRaw.slice(0, 40),
+    email: email.slice(0, 200),
+    ref,
+    note: suspectedSpam
+      ? "מקור: דף נחיתה /landing. חשוד כספאם (נתפס בפיתיון) - לבדוק לפני יצירת קשר."
+      : "מקור: דף נחיתה /landing (פגישת אפיון AI).",
+  };
+
+  async function deliver(target: string, url: string, body: unknown): Promise<boolean> {
     try {
-      const res = await fetch(webhook, {
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(body),
         signal: AbortSignal.timeout(10_000),
       });
       if (!res.ok) {
         // ליד אמיתי שנכשל - נשמר בלוג במלואו לשחזור (מומלץ להגדיר Log Drain)
-        console.error("lead webhook failed:", res.status, payload);
-        return Response.json({ ok: false }, { status: 502 });
+        console.error(`lead delivery to ${target} failed:`, res.status, payload);
+        return false;
       }
+      return true;
     } catch (err) {
-      console.error("lead webhook error:", err, payload);
+      console.error(`lead delivery to ${target} errored:`, err, payload);
+      return false;
+    }
+  }
+
+  const targets: Promise<boolean>[] = [];
+  if (CRM_URL && CRM_URL !== "off") targets.push(deliver("crm", CRM_URL, crmPayload));
+
+  const webhook = process.env.LEAD_WEBHOOK_URL;
+  if (webhook) targets.push(deliver("webhook", webhook, payload));
+
+  if (targets.length === 0) {
+    console.warn("no lead destination configured - lead logged only:", payload);
+  } else {
+    const results = await Promise.all(targets);
+    // 502 רק אם כל היעדים נפלו. הצלחה חלקית לא מפעילה ניסיון חוזר,
+    // שלא ייווצר ליד כפול ביעד שכן קלט אותו.
+    if (!results.some(Boolean)) {
       return Response.json({ ok: false }, { status: 502 });
     }
-  } else {
-    console.warn("LEAD_WEBHOOK_URL not set - lead logged only:", payload);
   }
 
   if (suspectedSpam) {

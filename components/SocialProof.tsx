@@ -1,37 +1,41 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Image, { type StaticImageData } from "next/image";
 import { LazyMotion, domAnimation, m, MotionConfig } from "framer-motion";
 import { copy } from "@/lib/copy";
+import { BASE_PATH } from "@/lib/site";
+
+import posterA from "@/assets/testimonials/testimonial-video.jpg";
+import posterB from "@/assets/testimonials/testimonial-video-3.jpg";
+import posterC from "@/assets/testimonials/testimonial-video-2.jpg";
+import shotThanks from "@/assets/testimonials/thanks.jpg";
+import shotLeads from "@/assets/testimonials/leads.jpg";
+import shotMaster from "@/assets/testimonials/master.jpg";
+import shotValue from "@/assets/testimonials/value.jpg";
 
 /**
- * סקשן העדויות - 3 סרטונים + 4 תמונות.
+ * סקשן העדויות: 3 המלצות מצולמות + 4 צילומי וואטסאפ.
  *
- * להוספת סרטון אמיתי:
- * 1. שים את הקובץ ב-public/testimonials/ (למשל video1.mp4 + פוסטר video1.jpg)
- * 2. עדכן את המערך: { src: "/testimonials/video1.mp4", poster: "/testimonials/video1.jpg" }
+ * התוכן מגיע מהקומפוננטה המשותפת של האתר (js/results-section.js) ומותאם
+ * כאן לעיצוב הדארק-נייבי של דף הנחיתה. הסדר בשורת הסרטונים זהה למקור.
  *
- * להוספת תמונה: שים ב-public/testimonials/ ועדכן את PHOTOS.
- * סלוט עם null מציג פלייסהולדר מעוצב עד שהמדיה מוכנה.
+ * להחלפת מדיה: דורסים את הקובץ ב-assets/testimonials/ (תמונות) או
+ * ב-public/testimonials/ (סרטונים). הקופי יושב ב-lib/copy.ts.
  */
-const VIDEOS: { src: string | null; poster: string | null; captions: string | null }[] = [
-  { src: null, poster: null, captions: null },
-  { src: null, poster: null, captions: null },
-  { src: null, poster: null, captions: null },
+const VIDEOS: { src: string; poster: StaticImageData }[] = [
+  { src: `${BASE_PATH}/testimonials/testimonial-video.mp4`, poster: posterA },
+  { src: `${BASE_PATH}/testimonials/testimonial-video-3.mp4`, poster: posterB },
+  { src: `${BASE_PATH}/testimonials/testimonial-video-2.mp4`, poster: posterC },
 ];
 
-const PHOTOS: { src: string | null; alt: string }[] = [
-  { src: null, alt: "עידו ראם" },
-  { src: null, alt: "מאור" },
-  { src: null, alt: "מאחורי הקלעים" },
-  { src: null, alt: "עבודה עם בעלי עסקים" },
-];
+const SHOTS: StaticImageData[] = [shotThanks, shotLeads, shotMaster, shotValue];
 
-function PlayIcon() {
+/* אייקון וואטסאפ - חוזר בכל כרטיס, בירוק המקורי של המותג */
+function WhatsAppIcon() {
   return (
-    <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden>
-      <circle cx="26" cy="26" r="25" stroke="rgba(138, 180, 255, 0.65)" strokeWidth="1.5" fill="rgba(2, 6, 15, 0.45)" />
-      <path d="M21 17.5v17l14-8.5-14-8.5z" fill="rgba(138, 180, 255, 0.9)" />
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm5.2 13.6c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5s.8 1.9.8 2c.1.1.1.3 0 .5-.3.6-.7.9-.5 1.2.7 1.2 1.6 2 2.8 2.6.3.2.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l2.1 1c.3.1.5.2.6.4 0 .1 0 .7-.2 1.2z" />
     </svg>
   );
 }
@@ -43,18 +47,35 @@ const rise = {
   transition: { duration: 0.6 },
 } as const;
 
-/**
- * הסקשן מוצג רק כשיש לפחות פריט מדיה אמיתי אחד - קופסאות ריקות באתר חי
- * פוגעות באמון יותר משהן עוזרות. לתצוגה מקדימה של העיצוב בלי מדיה:
- * שנה זמנית ל-true.
- */
-const SHOW_WITH_PLACEHOLDERS = false;
-
 export default function SocialProof() {
-  const { socialProof } = copy;
+  const { socialProof, ui } = copy;
   const railRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
-  const hasMedia = VIDEOS.some((v) => v.src) || PHOTOS.some((p) => p.src);
+
+  // הסרטונים מתנגנים רק כשהם בשדה הראייה. preload="none" משלים את זה:
+  // 14MB של וידאו לא יורדים עד שגוללים לכאן.
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const vids = Array.from(rail.querySelectorAll("video"));
+    if (!("IntersectionObserver" in window)) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          const vid = en.target as HTMLVideoElement;
+          if (en.isIntersecting) {
+            void vid.play().catch(() => {});
+          } else {
+            vid.pause();
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    vids.forEach((v) => io.observe(v));
+    return () => io.disconnect();
+  }, []);
 
   // הכרטיס הפעיל = זה שמרכזו הכי קרוב למרכז המסילה (נכון בכל רוחב מסך)
   function onRailScroll() {
@@ -86,113 +107,116 @@ export default function SocialProof() {
     });
   }
 
-  if (!hasMedia && !SHOW_WITH_PLACEHOLDERS) return null;
-
   return (
     <MotionConfig reducedMotion="user">
       <LazyMotion features={domAnimation} strict>
-      <section
-        style={{
-          position: "relative",
-          padding: "clamp(64px, 10vw, 110px) 0",
-          background: "var(--bg)",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          aria-hidden
+        <section
+          id="results"
           style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "radial-gradient(ellipse 800px 500px at 50% 20%, rgba(77, 141, 255, 0.06) 0%, transparent 70%)",
-            pointerEvents: "none",
+            position: "relative",
+            padding: "clamp(64px, 10vw, 110px) 0",
+            background: "var(--bg)",
+            overflow: "hidden",
           }}
-        />
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <m.h2
-            {...rise}
+        >
+          <div
+            aria-hidden
             style={{
-              fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)",
-              fontWeight: 800,
-              color: "#ffffff",
-              lineHeight: 1.3,
-              textAlign: "center",
-              margin: "0 0 10px",
-              padding: "0 24px",
+              position: "absolute",
+              inset: 0,
+              background:
+                "radial-gradient(ellipse 800px 500px at 50% 20%, rgba(77, 141, 255, 0.06) 0%, transparent 70%)",
+              pointerEvents: "none",
             }}
-          >
-            {socialProof.h2}
-          </m.h2>
-          <m.p
-            {...rise}
-            style={{
-              fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)",
-              color: "#aab4c8",
-              textAlign: "center",
-              margin: "0 0 30px",
-              padding: "0 24px",
-            }}
-          >
-            {socialProof.subtext}
-          </m.p>
+          />
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <m.h2
+              {...rise}
+              style={{
+                fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)",
+                fontWeight: 800,
+                color: "#ffffff",
+                lineHeight: 1.3,
+                textAlign: "center",
+                margin: "0 0 10px",
+                padding: "0 24px",
+              }}
+            >
+              {socialProof.h2}
+            </m.h2>
+            <m.p
+              {...rise}
+              style={{
+                fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)",
+                color: "#aab4c8",
+                textAlign: "center",
+                margin: "0 0 30px",
+                padding: "0 24px",
+              }}
+            >
+              {socialProof.subtext}
+            </m.p>
 
-          {/* סרטוני עדות - קרוסלת החלקה במובייל, שלישייה בדסקטופ */}
-          <m.div
-            {...rise}
-            className="sp-videos"
-            dir="ltr"
-            ref={railRef}
-            onScroll={onRailScroll}
-            role="region"
-            aria-label={copy.ui.videosRegionLabel}
-          >
-            {VIDEOS.map((v, i) => (
-              <div className="sp-video" key={i} dir="rtl">
-                {v.src ? (
-                  <video src={v.src} poster={v.poster ?? undefined} controls playsInline preload="metadata">
-                    {v.captions && (
-                      <track kind="captions" srcLang="he" label="עברית" default src={v.captions} />
-                    )}
-                  </video>
-                ) : (
-                  <div className="sp-ghost">
-                    <PlayIcon />
-                    <span>{copy.ui.videoPlaceholder}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </m.div>
-          <div className="sp-dots" dir="ltr">
-            {VIDEOS.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`sp-dot${active === i ? " active" : ""}`}
-                aria-label={`${copy.ui.videoDotLabel} ${i + 1}`}
-                aria-current={active === i ? "true" : undefined}
-                onClick={() => scrollToCard(i)}
-              />
-            ))}
+            {/* המלצות מצולמות - קרוסלת החלקה במובייל, שלישייה בדסקטופ */}
+            <m.div
+              {...rise}
+              className="sp-videos"
+              dir="ltr"
+              ref={railRef}
+              onScroll={onRailScroll}
+              role="region"
+              aria-label={ui.videosRegionLabel}
+            >
+              {VIDEOS.map((v, i) => (
+                <div className="sp-video" key={v.src} dir="rtl">
+                  <video
+                    src={v.src}
+                    poster={v.poster.src}
+                    aria-label={`${socialProof.videoAlt} ${i + 1}`}
+                    controls
+                    controlsList="nodownload"
+                    muted
+                    loop
+                    playsInline
+                    preload="none"
+                  />
+                </div>
+              ))}
+            </m.div>
+            <div className="sp-dots" dir="ltr">
+              {VIDEOS.map((v, i) => (
+                <button
+                  key={v.src}
+                  type="button"
+                  className={`sp-dot${active === i ? " active" : ""}`}
+                  aria-label={`${ui.videoDotLabel} ${i + 1}`}
+                  aria-current={active === i ? "true" : undefined}
+                  onClick={() => scrollToCard(i)}
+                />
+              ))}
+            </div>
+
+            {/* צילומי וואטסאפ - נשארים כמו שהם, בלי חיתוך. האותנטיות היא הנכס */}
+            <m.div {...rise} className="sp-shots">
+              {socialProof.cards.map((card, i) => (
+                <figure className="sp-shot" key={card.title}>
+                  <figcaption>
+                    <span className="sp-wa">
+                      <WhatsAppIcon />
+                    </span>
+                    {card.title}
+                  </figcaption>
+                  <Image
+                    src={SHOTS[i]}
+                    alt={card.alt}
+                    sizes="(max-width: 899px) 92vw, 440px"
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                </figure>
+              ))}
+            </m.div>
           </div>
-
-          {/* תמונות */}
-          <m.div {...rise} className="sp-photos">
-            {PHOTOS.map((p, i) => (
-              <div className="sp-photo" key={i}>
-                {p.src ? (
-                  <img src={p.src} alt={p.alt} loading="lazy" />
-                ) : (
-                  <div className="sp-ghost">
-                    <span>{copy.ui.photoPlaceholder}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </m.div>
-        </div>
-      </section>
+        </section>
       </LazyMotion>
     </MotionConfig>
   );
