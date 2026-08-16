@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, LazyMotion, domAnimation, m, MotionConfig } from "framer-motion";
 import { copy } from "@/lib/copy";
 import { BASE_PATH } from "@/lib/site";
+import { LEAD_KEY, newEventId, trackLead } from "@/components/MetaPixel";
 
 type Status = "idle" | "sending" | "error";
 type FieldKey = "name" | "email" | "phone";
@@ -149,10 +150,15 @@ export default function LeadForm() {
         await new Promise((r) => setTimeout(r, 600));
         await postLead();
       }
-      // חתימה לאירוע ה-Lead של הפיקסל, נקראת בדף התודה
+      // אירוע ההמרה נורה כאן, ברגע שהשרת אישר קליטה: זה הרגע היחיד שבו
+      // ידוע בוודאות שהליד נקלט, והסקריפט של מטא כבר טעון מטעינת הדף.
+      // החתימה נשמרת כדי שדף התודה ישמש רשת ביטחון אם הירי כאן נכשל.
+      const eventId = newEventId();
       try {
-        sessionStorage.setItem("lead_submitted", crypto.randomUUID());
+        sessionStorage.setItem(LEAD_KEY, eventId);
       } catch {}
+      trackLead(eventId);
+
       router.push("/thanks");
     } catch {
       setStatus("error");

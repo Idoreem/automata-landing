@@ -58,22 +58,73 @@ fbq('track', 'PageView');`}
   );
 }
 
+/** החתימה שנכתבת ברגע השליחה, וסימון שהאירוע כבר נורה בפועל */
+export const LEAD_KEY = "lead_submitted";
+const FIRED_KEY = "lead_pixel_fired";
+
+/** מזהה אירוע. crypto.randomUUID לא קיים בדפדפנים ישנים, ואסור שזה יפיל את המדידה */
+export function newEventId(): string {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+  } catch {}
+  return `lead-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 /**
- * אירוע ההמרה - נורה רק אחרי שליחת טופס אמיתית (חתימה ב-sessionStorage),
- * לא על רענון או כניסה ישירה לדף התודה. eventID ייחודי מוכן לדדופליקציה מול CAPI.
+ * יורה אירוע Lead. אם הסקריפט של מטא עוד לא נטען, ממתין לו במקום לוותר
+ * בשקט - זו הייתה נקודת הכשל הקודמת. אותו eventID בכל ניסיון, כך שגם אם
+ * האירוע נורה פעמיים (וגם מול CAPI בעתיד) מטא סופרת המרה אחת.
+ */
+export function trackLead(eventId: string): void {
+  if (!PIXEL_ID || typeof window === "undefined") return;
+  let tries = 0;
+  const attempt = () => {
+    if (typeof window.fbq === "function") {
+      window.fbq("track", "Lead", {}, { eventID: eventId });
+      try {
+        sessionStorage.setItem(FIRED_KEY, eventId);
+      } catch {}
+      return;
+    }
+    if (tries++ < 30) setTimeout(attempt, 200); // עד 6 שניות המתנה
+  };
+  attempt();
+}
+
+/**
+ * רשת ביטחון בדף התודה: יורה רק אם השליחה עצמה לא הספיקה לירות.
+ * לא נורה על רענון או כניסה ישירה, כי בלי חתימה אין אירוע.
  */
 export function PixelLeadEvent() {
-  const fired = useRef(false);
+  const handled = useRef(false);
   useEffect(() => {
-    if (!PIXEL_ID || fired.current) return;
+    if (!PIXEL_ID || handled.current) return;
+    handled.current = true;
+
     let eventId: string | null = null;
+    let already: string | null = null;
     try {
-      eventId = sessionStorage.getItem("lead_submitted");
-      if (eventId) sessionStorage.removeItem("lead_submitted");
+      eventId = sessionStorage.getItem(LEAD_KEY);
+      already = sessionStorage.getItem(FIRED_KEY);
     } catch {}
     if (!eventId) return;
-    fired.current = true;
-    window.fbq?.("track", "Lead", {}, { eventID: eventId });
+
+    // החתימה נמחקת רק אחרי שהוכרע מה לעשות איתה
+    const clear = () => {
+      try {
+        sessionStorage.removeItem(LEAD_KEY);
+        sessionStorage.removeItem(FIRED_KEY);
+      } catch {}
+    };
+
+    if (already === eventId) {
+      clear(); // כבר נורה ברגע השליחה
+      return;
+    }
+    trackLead(eventId);
+    setTimeout(clear, 7000); // אחרי שחלון ההמתנה ל-fbq נסגר
   }, []);
   return null;
 }
