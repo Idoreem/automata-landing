@@ -1,17 +1,18 @@
 import Image from "next/image";
-import mockup from "@/assets/mockup.png";
+import thanks from "@/assets/thanks.png";
 
 /**
- * תמונת דף התודה — אותה תמונת נושא.
- * להחלפה בתמונה ייעודית: מוסיפים קובץ ל-assets ומעדכנים את ה-import.
+ * תמונת דף התודה — הקריאייטיב הייעודי ("קיבלנו את הפרטים שלך").
+ * להחלפה: דורסים את assets/thanks.png.
  */
 export default function ThanksImageSlot({ alt }: { alt: string }) {
   return (
     <Image
-      src={mockup}
+      src={thanks}
       alt={alt}
+      priority
       placeholder="blur"
-      sizes="(max-width: 900px) 92vw, 1040px"
+      sizes="(max-width: 900px) 100vw, 880px"
       style={{ width: "100%", height: "auto", display: "block" }}
     />
   );
