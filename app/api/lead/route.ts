@@ -1,3 +1,5 @@
+import { after } from "next/server";
+
 // יעדי הלידים:
 //
 // 1. ה-CRM של מאור. יעד ברירת המחדל, מוגדר מראש - עובד בלי משתני סביבה.
@@ -123,42 +125,51 @@ export async function POST(req: Request) {
       : "מקור: דף נחיתה /landing (פגישת אפיון AI).",
   };
 
+  /**
+   * שלושה ניסיונות עם השהיה עולה. זה רץ בשרת, אחרי שהתשובה כבר יצאה,
+   * ולכן הוא לא מעכב את הגולש ולא תלוי בכך שהדפדפן שלו יישאר פתוח.
+   */
   async function deliver(target: string, url: string, body: unknown): Promise<boolean> {
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(10_000),
-      });
-      if (!res.ok) {
-        // ליד אמיתי שנכשל - נשמר בלוג במלואו לשחזור (מומלץ להגדיר Log Drain)
-        console.error(`lead delivery to ${target} failed:`, res.status, payload);
-        return false;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (res.ok) return true;
+        console.error(`lead delivery to ${target} failed (attempt ${attempt}):`, res.status);
+      } catch (err) {
+        console.error(`lead delivery to ${target} errored (attempt ${attempt}):`, err);
       }
-      return true;
-    } catch (err) {
-      console.error(`lead delivery to ${target} errored:`, err, payload);
-      return false;
+      if (attempt < 3) await new Promise((r) => setTimeout(r, attempt * 1500));
     }
+    // ליד אמיתי שאבד - נשמר בלוג במלואו לשחזור (מומלץ להגדיר Log Drain)
+    console.error(`lead delivery to ${target} gave up, LEAD AT RISK:`, payload);
+    return false;
   }
 
-  const targets: Promise<boolean>[] = [];
-  if (CRM_URL && CRM_URL !== "off") targets.push(deliver("crm", CRM_URL, crmPayload));
+  // המסירה ליעדים רצה אחרי שהתשובה כבר נשלחה לדפדפן. הגולש מקבל אישור
+  // תוך עשרות אלפיות ועובר מיד לדף התודה, בעוד הפלטפורמה שומרת את
+  // הפונקציה חיה עד שהמסירה נגמרת. זה המקום היחיד שבו "ברקע" באמת
+  // בטוח: בדפדפן, יציאה מהדף הורגת את הבקשה באמצע.
+  after(async () => {
+    const targets: Promise<boolean>[] = [];
+    if (CRM_URL && CRM_URL !== "off") targets.push(deliver("crm", CRM_URL, crmPayload));
 
-  const webhook = process.env.LEAD_WEBHOOK_URL;
-  if (webhook) targets.push(deliver("webhook", webhook, payload));
+    const webhook = process.env.LEAD_WEBHOOK_URL;
+    if (webhook) targets.push(deliver("webhook", webhook, payload));
 
-  if (targets.length === 0) {
-    console.warn("no lead destination configured - lead logged only:", payload);
-  } else {
+    if (targets.length === 0) {
+      console.error("no lead destination configured - LEAD LOST:", payload);
+      return;
+    }
     const results = await Promise.all(targets);
-    // 502 רק אם כל היעדים נפלו. הצלחה חלקית לא מפעילה ניסיון חוזר,
-    // שלא ייווצר ליד כפול ביעד שכן קלט אותו.
     if (!results.some(Boolean)) {
-      return Response.json({ ok: false }, { status: 502 });
+      console.error("lead delivery failed to every destination:", payload);
     }
-  }
+  });
 
   if (suspectedSpam) {
     console.warn("suspected spam lead forwarded with flag:", mask(email, phoneRaw));

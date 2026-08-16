@@ -116,34 +116,17 @@ export default function LeadForm() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...values, consent, notes_hp: hp, ref }),
-      // הבקשה שורדת גם אם הגולש סוגר את הטאב או מנווט החוצה מיד אחרי השליחה
-      keepalive: true,
     });
     if (!res.ok) throw new Error(String(res.status));
   }
 
   /**
-   * השליחה רצה אחרי שהגולש כבר עבר לדף התודה, ולכן אין למי להציג שגיאה.
-   * במקום זה מנסים שלוש פעמים עם השהיה עולה: אף אחד לא ממתין, אז עדיף
-   * להתעקש מאשר לוותר. הראוט בשרת מחזיר 502 רק אם כל היעדים נפלו, כך
-   * שניסיון חוזר לא ייצור ליד כפול.
+   * ממתינים לאישור מהשרת לפני המעבר, אבל ההמתנה קצרה: הראוט מאשר קליטה
+   * מיד ומעביר ל-CRM אחרי שהתשובה יצאה. ככה הגולש עובר כמעט מיידית,
+   * ובכל זאת יודעים בוודאות שהליד הגיע לשרת. אסור לשלוח ברקע מהדפדפן:
+   * גולש שיוצא מהדף באותה שנייה הורג את הבקשה, והליד נעלם.
    */
-  async function deliverInBackground() {
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        await postLead();
-        return;
-      } catch (err) {
-        if (attempt === 3) {
-          console.error("lead delivery failed after 3 attempts", err);
-          return;
-        }
-        await new Promise((r) => setTimeout(r, attempt * 2000));
-      }
-    }
-  }
-
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (status === "sending") return;
 
@@ -158,18 +141,18 @@ export default function LeadForm() {
     }
 
     setStatus("sending");
-
-    // חתימה לאירוע ה-Lead של הפיקסל, נקבעת לפני המעבר כדי שדף התודה
-    // ימצא אותה. השליחה עצמה כבר לא מעכבת את הגולש.
     try {
-      sessionStorage.setItem("lead_submitted", crypto.randomUUID());
-    } catch {}
-
-    // הגולש עובר לדף התודה מיד. ניווט של Next הוא צד-לקוח, כך שהקשר
-    // ה-JS שורד את המעבר וה-fetch ממשיך לרוץ ברקע.
-    void deliverInBackground();
-
-    try {
+      try {
+        await postLead();
+      } catch {
+        // ניסיון חוזר מהיר אחד. מכסה נפילת רשת רגעית בלי להשהות מורגשת
+        await new Promise((r) => setTimeout(r, 600));
+        await postLead();
+      }
+      // חתימה לאירוע ה-Lead של הפיקסל, נקראת בדף התודה
+      try {
+        sessionStorage.setItem("lead_submitted", crypto.randomUUID());
+      } catch {}
       router.push("/thanks");
     } catch {
       setStatus("error");
