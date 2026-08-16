@@ -1,8 +1,8 @@
 // יעד הלידים: Webhook של Make (או כל יעד אחר) דרך משתנה סביבה.
 // הגדרה ב-Vercel: Settings → Environment Variables → LEAD_WEBHOOK_URL
-// כל עוד המשתנה לא מוגדר — הליד נרשם ללוג בלבד ולא נשמר. אסור להריץ טראפיק ככה.
+// כל עוד המשתנה לא מוגדר - הליד נרשם ללוג בלבד ולא נשמר. אסור להריץ טראפיק ככה.
 
-// הגבלת קצב בסיסית לכל אינסטנס (סרברלס — מתאפס בין אינסטנסים; שכבת הגנה ראשונה בלבד).
+// הגבלת קצב בסיסית לכל אינסטנס (סרברלס - מתאפס בין אינסטנסים; שכבת הגנה ראשונה בלבד).
 // התקרה נדיבה בכוונה: גולשי מובייל מקמפיין חולקים IP דרך CGNAT של המפעיל.
 const hits = new Map<string, number[]>();
 const WINDOW_MS = 60_000;
@@ -11,7 +11,7 @@ const MAP_CLEAN_THRESHOLD = 1000;
 
 function rateLimited(ip: string): boolean {
   const now = Date.now();
-  // ניקוי המפה כשהיא תופחת — מונע דליפת זיכרון באינסטנס חם
+  // ניקוי המפה כשהיא תופחת - מונע דליפת זיכרון באינסטנס חם
   if (hits.size > MAP_CLEAN_THRESHOLD) {
     for (const [key, times] of hits) {
       if (times.every((t) => now - t >= WINDOW_MS)) hits.delete(key);
@@ -20,7 +20,7 @@ function rateLimited(ip: string): boolean {
   const arr = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
   if (arr.length >= MAX_PER_WINDOW) {
     hits.set(ip, arr);
-    return true; // בקשה שנדחתה לא נספרת — ניסיון חוזר לא מאריך את הנעילה
+    return true; // בקשה שנדחתה לא נספרת - ניסיון חוזר לא מאריך את הנעילה
   }
   arr.push(now);
   hits.set(ip, arr);
@@ -33,7 +33,7 @@ const str = (v: unknown, max: number): string =>
 // נטרול תו פותח שמסוכן בגיליונות (הזרקת נוסחאות ב-Google Sheets וכד')
 const defuse = (s: string): string => s.replace(/^[=+@\t\r]+/, "");
 
-// מיסוך PII ללוגים — מספיק לזיהוי, לא מספיק לזליגה
+// מיסוך PII ללוגים - מספיק לזיהוי, לא מספיק לזליגה
 const mask = (email: string, phone: string) => ({
   email: email.replace(/^(.).*(@.*)$/, "$1***$2"),
   phone: `***${phone.replace(/\D/g, "").slice(-3)}`,
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "bad json" }, { status: 400 });
   }
 
-  // הגבלת קצב קודם לכל — גם בוטים שנתפסים בפיתיון כפופים לה
+  // הגבלת קצב קודם לכל - גם בוטים שנתפסים בפיתיון כפופים לה
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   if (rateLimited(ip)) {
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
     return Response.json({ ok: false, error: "invalid email" }, { status: 400 });
   }
-  // רשימת תווים סגורה לטלפון — חוסמת גם הזרקות נוסחה וגם זבל
+  // רשימת תווים סגורה לטלפון - חוסמת גם הזרקות נוסחה וגם זבל
   if (
     phoneDigits.length < 8 ||
     phoneDigits.length > 15 ||
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     email,
     phone: phoneRaw,
     consent: true,
-    // ליד שנתפס בפיתיון לא נזרק — עובר עם דגל, ומסוננים ב-Make.
+    // ליד שנתפס בפיתיון לא נזרק - עובר עם דגל, ומסוננים ב-Make.
     // ככה מילוי אוטומטי שהפעיל את הפיתיון בטעות לא מעלים ליד אמיתי.
     suspected_spam: suspectedSpam,
     source: "automata-landing",
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
         signal: AbortSignal.timeout(10_000),
       });
       if (!res.ok) {
-        // ליד אמיתי שנכשל — נשמר בלוג במלואו לשחזור (מומלץ להגדיר Log Drain)
+        // ליד אמיתי שנכשל - נשמר בלוג במלואו לשחזור (מומלץ להגדיר Log Drain)
         console.error("lead webhook failed:", res.status, payload);
         return Response.json({ ok: false }, { status: 502 });
       }
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
       return Response.json({ ok: false }, { status: 502 });
     }
   } else {
-    console.warn("LEAD_WEBHOOK_URL not set — lead logged only:", payload);
+    console.warn("LEAD_WEBHOOK_URL not set - lead logged only:", payload);
   }
 
   if (suspectedSpam) {

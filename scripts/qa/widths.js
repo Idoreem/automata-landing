@@ -1,4 +1,4 @@
-// בדיקת גלישה אופקית ברוחבי מסך נפוצים — חייב להיות 0 בכולם.
+// בדיקת גלישה אופקית ברוחבי מסך נפוצים - חייב להיות 0 בכולם.
 // שימוש: npm run qa:widths [-- <url>]
 const puppeteer = require("puppeteer-core");
 const { findBrowser, DEFAULT_URL } = require("./browser");

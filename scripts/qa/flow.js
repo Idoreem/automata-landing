@@ -1,5 +1,5 @@
-// E2E: מילוי הטופס → שליחה → נחיתה בדף התודה.
-// ⚠️ שולח ליד בדיקה אמיתי (שם "בדיקה אוטומטית") — אם ה-webhook מחובר, לסנן אותו ב-CRM.
+// E2E: מעבר בשלושת שלבי הטופס עד דף התודה.
+// ⚠️ שולח ליד בדיקה אמיתי (שם "בדיקה") - אם ה-webhook מחובר, לסנן אותו ב-CRM.
 // שימוש: npm run qa:flow [-- <url>]
 const puppeteer = require("puppeteer-core");
 const { findBrowser, DEFAULT_URL } = require("./browser");
@@ -14,14 +14,26 @@ const { findBrowser, DEFAULT_URL } = require("./browser");
   const p = await b.newPage();
   await p.setViewport({ width: 390, height: 844 });
   await p.goto(base, { waitUntil: "domcontentloaded", timeout: 45000 });
-  await new Promise((r) => setTimeout(r, 1500));
+  await new Promise((r) => setTimeout(r, 1600));
 
-  await p.type('input[name="name"]', "בדיקה אוטומטית");
-  await p.type('input[name="email"]', "qa-test@automata.test");
-  await p.type('input[name="phone"]', "0500000000");
-  await p.click('input[name="consent"]');
-  await p.click('button[type="submit"]');
-  await new Promise((r) => setTimeout(r, 4000));
+  const steps = [
+    ["#lead-name", "בדיקה"],
+    ["#lead-email", "qa-test@automata.test"],
+    ["#lead-phone", "0500000000"],
+  ];
+
+  for (const [sel, val] of steps) {
+    await p.waitForSelector(sel, { timeout: 10000 });
+    await p.type(sel, val);
+    if (sel !== "#lead-phone") {
+      await p.click(".step-primary");
+      await new Promise((r) => setTimeout(r, 700));
+    }
+  }
+
+  await p.click('input[type="checkbox"]');
+  await p.click(".step-primary");
+  await new Promise((r) => setTimeout(r, 4500));
 
   const url = p.url();
   const ok = await p.evaluate(() =>

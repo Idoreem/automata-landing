@@ -29,7 +29,7 @@ export default function NotFound() {
         404
       </p>
       <p style={{ color: "#aab4c8", fontSize: "1.1rem", margin: 0 }}>
-        הדף הזה לא קיים. הדף שכן קיים — שווה את הקליק.
+        הדף הזה לא קיים. הדף שכן קיים - שווה את הקליק.
       </p>
       <Link
         href="/"

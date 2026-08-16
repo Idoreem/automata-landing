@@ -5,12 +5,12 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 /**
- * פיקסל מטא — מוכן להדלקה.
+ * פיקסל מטא - מוכן להדלקה.
  * להפעלה: מגדירים ב-Vercel משתנה סביבה NEXT_PUBLIC_META_PIXEL_ID עם מזהה הפיקסל,
- * ועושים Redeploy. בלי המשתנה — הקומפוננטה לא מרנדרת כלום.
+ * ועושים Redeploy. בלי המשתנה - הקומפוננטה לא מרנדרת כלום.
  *
  * מה נורה: PageView בכל טעינה/ניווט, ואירוע Lead בכניסה לדף התודה
- * (ראה PixelLeadEvent בתחתית הקובץ — משולב בדף התודה).
+ * (ראה PixelLeadEvent בתחתית הקובץ - משולב בדף התודה).
  */
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
@@ -57,7 +57,7 @@ fbq('track', 'PageView');`}
 }
 
 /**
- * אירוע ההמרה — נורה רק אחרי שליחת טופס אמיתית (חתימה ב-sessionStorage),
+ * אירוע ההמרה - נורה רק אחרי שליחת טופס אמיתית (חתימה ב-sessionStorage),
  * לא על רענון או כניסה ישירה לדף התודה. eventID ייחודי מוכן לדדופליקציה מול CAPI.
  */
 export function PixelLeadEvent() {

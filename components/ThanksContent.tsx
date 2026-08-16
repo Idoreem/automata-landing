@@ -6,7 +6,7 @@ import confetti from "canvas-confetti";
 import { copy } from "@/lib/copy";
 import ThanksImageSlot from "./ThanksImageSlot";
 
-// צבעי המותג — הקונפטי חייב להרגיש חלק מהעיצוב, לא סטיקר עליו
+// צבעי המותג - הקונפטי חייב להרגיש חלק מהעיצוב, לא סטיקר עליו
 const BRAND = ["#4d8dff", "#8ab4ff", "#2f6bff", "#ffffff", "#c9dcff"];
 
 const rise = (delay: number) => ({
@@ -22,9 +22,9 @@ export default function ThanksContent() {
 
   /**
    * רצף חגיגה בשלוש שכבות:
-   * 1. פיצוץ מרכזי רחב — הרגע עצמו
-   * 2. שתי תותחים מהצדדים בהשהיה — מילוי הפריים
-   * 3. נשורת חלקיקים איטית ~2.5 שניות — הזנב היוקרתי שמונע תחושת "פופ" זול
+   * 1. פיצוץ מרכזי רחב - הרגע עצמו
+   * 2. שתי תותחים מהצדדים בהשהיה - מילוי הפריים
+   * 3. נשורת חלקיקים איטית ~2.5 שניות - הזנב היוקרתי שמונע תחושת "פופ" זול
    */
   useEffect(() => {
     if (reduced || !canvasRef.current) return;
@@ -37,7 +37,7 @@ export default function ThanksContent() {
 
     timers.push(
       setTimeout(() => {
-        // 1 — הפיצוץ המרכזי, מעט מתחת לאמצע כדי לעלות אל התמונה
+        // 1 - הפיצוץ המרכזי, מעט מתחת לאמצע כדי לעלות אל התמונה
         fire({
           ...base,
           particleCount: 120,
@@ -52,7 +52,7 @@ export default function ThanksContent() {
 
     timers.push(
       setTimeout(() => {
-        // 2 — תותחי צד
+        // 2 - תותחי צד
         fire({ ...base, particleCount: 55, angle: 55, spread: 65, startVelocity: 50, origin: { x: 0, y: 0.75 } });
         fire({ ...base, particleCount: 55, angle: 125, spread: 65, startVelocity: 50, origin: { x: 1, y: 0.75 } });
       }, 620)
@@ -60,7 +60,7 @@ export default function ThanksContent() {
 
     timers.push(
       setTimeout(() => {
-        // 3 — נשורת עדינה: חלקיקים קטנים, כבידה נמוכה, ריחוף הצידה
+        // 3 - נשורת עדינה: חלקיקים קטנים, כבידה נמוכה, ריחוף הצידה
         const end = Date.now() + 2500;
         drift = setInterval(() => {
           if (Date.now() > end) {
@@ -108,7 +108,7 @@ export default function ThanksContent() {
             overflow: "hidden",
           }}
         >
-          {/* שכבת הקונפטי — מעל התוכן, שקופה ללחיצות */}
+          {/* שכבת הקונפטי - מעל התוכן, שקופה ללחיצות */}
           <canvas
             ref={canvasRef}
             aria-hidden
@@ -135,7 +135,7 @@ export default function ThanksContent() {
           />
 
           <div style={{ position: "relative", zIndex: 1, maxWidth: 880, width: "100%" }}>
-            {/* הקריאייטיב הוא האישור עצמו — הווי והכותרת כבר בתוכו */}
+            {/* הקריאייטיב הוא האישור עצמו - הווי והכותרת כבר בתוכו */}
             <m.div
               className="media-frame"
               initial={{ opacity: 0, scale: 0.94, filter: "blur(6px)" }}
@@ -180,25 +180,63 @@ export default function ThanksContent() {
               {thanks.sub}
             </m.p>
 
-            {/* בלוק ההכנה — מנגנון המחויבות שמעלה את אחוז ההגעה לפגישה */}
+            {/* בלוק ההכנה: מנגנון המחויבות שמעלה את אחוז ההגעה לפגישה */}
             <m.div
               {...rise(0.72)}
               style={{
                 display: "inline-block",
+                maxWidth: 560,
                 background:
                   "linear-gradient(180deg, rgba(77, 141, 255, 0.09) 0%, rgba(77, 141, 255, 0.04) 100%)",
                 border: "1px solid rgba(77, 141, 255, 0.32)",
-                borderRadius: 16,
-                padding: "clamp(20px, 4vw, 28px) clamp(22px, 5vw, 36px)",
-                fontSize: "clamp(0.98rem, 1.8vw, 1.12rem)",
-                fontWeight: 600,
-                color: "#ffffff",
-                lineHeight: 1.85,
-                whiteSpace: "pre-line",
+                borderRadius: 18,
+                padding: "clamp(22px, 4vw, 30px) clamp(22px, 5vw, 36px)",
                 boxShadow: "0 0 40px rgba(77, 141, 255, 0.08)",
               }}
             >
-              {thanks.prep}
+              <p
+                style={{
+                  fontSize: "clamp(0.98rem, 1.8vw, 1.12rem)",
+                  fontWeight: 600,
+                  color: "#ffffff",
+                  lineHeight: 1.85,
+                  whiteSpace: "pre-line",
+                  margin: "0 0 20px",
+                }}
+              >
+                {thanks.prep.question}
+              </p>
+
+              <a
+                className="wa-btn"
+                href={`https://wa.me/${copy.whatsapp.number}?text=${encodeURIComponent(
+                  copy.whatsapp.prefill
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden focusable="false">
+                  <path
+                    fill="currentColor"
+                    d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.87 9.87 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.02h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.37c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.41a8.19 8.19 0 0 1 2.41 5.83c0 4.54-3.7 8.22-8.24 8.22z"
+                  />
+                </svg>
+                <span>{thanks.prep.ctaLabel}</span>
+              </a>
+
+              <p
+                style={{
+                  fontSize: "0.86rem",
+                  color: "#9aa6ba",
+                  margin: "14px 0 0",
+                }}
+              >
+                {thanks.prep.ctaNote}
+              </p>
             </m.div>
           </div>
         </main>

@@ -14,7 +14,7 @@ const { findBrowser, DEFAULT_URL } = require("./browser");
   const errs = [];
   p.on("requestfailed", (r) => errs.push("FAIL " + r.url().slice(0, 110)));
   p.on("response", (r) => {
-    // _vercel/insights לא קיים לוקאלית — לא כשל אמיתי
+    // _vercel/insights לא קיים לוקאלית - לא כשל אמיתי
     if (r.status() >= 400 && !r.url().includes("_vercel/insights"))
       errs.push(r.status() + " " + r.url().slice(0, 110));
   });

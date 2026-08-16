@@ -2,7 +2,7 @@ import Image from "next/image";
 import thanks from "@/assets/thanks.png";
 
 /**
- * תמונת דף התודה — הקריאייטיב הייעודי ("קיבלנו את הפרטים שלך").
+ * תמונת דף התודה - הקריאייטיב הייעודי ("קיבלנו את הפרטים שלך").
  * להחלפה: דורסים את assets/thanks.png.
  */
 export default function ThanksImageSlot({ alt }: { alt: string }) {

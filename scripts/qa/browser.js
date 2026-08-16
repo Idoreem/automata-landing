@@ -1,4 +1,4 @@
-// איתור דפדפן מקומי לבדיקות — Windows / macOS / Linux, או BROWSER_PATH ידני
+// איתור דפדפן מקומי לבדיקות - Windows / macOS / Linux, או BROWSER_PATH ידני
 const fs = require("fs");
 
 const CANDIDATES = [

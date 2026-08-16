@@ -55,7 +55,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: "Automata",
-              description: "ארכיטקטורה טכנולוגית לעסקים — AI ואוטומציות",
+              description: "ארכיטקטורה טכנולוגית לעסקים - AI ואוטומציות",
               url: `${SITE_URL}${BASE_PATH}`,
               founder: [{ "@type": "Person", name: "עידו ראם" }],
             }),

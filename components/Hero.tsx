@@ -2,6 +2,7 @@
 
 import { LazyMotion, domAnimation, m, MotionConfig } from "framer-motion";
 import { copy } from "@/lib/copy";
+import BurningHeadline from "./BurningHeadline";
 import MockupSlot from "./MockupSlot";
 
 // אנימציית הכניסה של הרפרנס: blur + fade + עלייה, בהדרגה
@@ -13,7 +14,7 @@ const rise = (delay: number) => ({
 
 export default function Hero() {
   const { hero } = copy;
-  // הגנה מפני עריכת קופי עתידית: אם ה-highlight כבר לא בתוך הסאב — מציגים אותו רגיל
+  // הגנה מפני עריכת קופי עתידית: אם ה-highlight כבר לא בתוך הסאב - מציגים אותו רגיל
   const hasHighlight = hero.sub.includes(hero.subHighlight);
   const [beforeHighlight, afterHighlight] = hasHighlight
     ? hero.sub.split(hero.subHighlight)
@@ -35,7 +36,7 @@ export default function Hero() {
           overflow: "hidden",
         }}
       >
-        {/* זוהר רדיאלי + גריד עדין — כמו ברפרנס, בכחול */}
+        {/* זוהר רדיאלי + גריד עדין - כמו ברפרנס, בכחול */}
         <div
           aria-hidden
           className="glow-breathe"
@@ -61,32 +62,13 @@ export default function Hero() {
         />
 
         <div style={{ position: "relative", zIndex: 1, maxWidth: 900, width: "100%" }}>
-          <m.h1
-            {...rise(0.05)}
-            style={{
-              fontWeight: 800,
-              lineHeight: 1.08,
-              letterSpacing: "-0.03em",
-              background:
-                "linear-gradient(135deg, #2f6bff 0%, #8ab4ff 50%, #2f6bff 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              display: "inline-block",
-              margin: "0 auto 28px",
-              padding: "0 8px",
-            }}
-          >
-            <span style={{ display: "block", fontSize: "clamp(1.9rem, 6.5vw, 4rem)" }}>
-              {hero.h1Line1}
-            </span>
-            <span style={{ display: "block", fontSize: "clamp(2.8rem, 10.5vw, 6.4rem)" }}>
-              {hero.h1Line2}
-            </span>
-          </m.h1>
+          <m.div {...rise(0.05)}>
+            <BurningHeadline />
+          </m.div>
 
           <m.p
             {...rise(0.2)}
+            className="hero-layer"
             style={{
               fontSize: "clamp(1.35rem, 4.4vw, 2rem)",
               fontWeight: 800,
@@ -116,6 +98,7 @@ export default function Hero() {
 
           <m.p
             {...rise(0.32)}
+            className="hero-layer"
             style={{
               fontSize: "clamp(0.9rem, 1.7vw, 1.1rem)",
               color: "#aab4c8",
@@ -127,7 +110,26 @@ export default function Hero() {
             {hero.parenthetical}
           </m.p>
 
-          {/* השטח השמור למוקאפ — לחיץ, מגלגל לטופס */}
+          {/* כפתור ראשון: תופס את מי שכבר משוכנע מהכותרת */}
+          <m.div
+            {...rise(0.4)}
+            className="hero-layer"
+            style={{ display: "flex", justifyContent: "center", marginBottom: 30 }}
+          >
+            <a
+              href="#form"
+              className="cta-btn cta-ghost"
+              style={{
+                fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)",
+                padding: "clamp(13px, 1.8vw, 17px) clamp(22px, 4vw, 40px)",
+                maxWidth: "92vw",
+              }}
+            >
+              {hero.heroCta}
+            </a>
+          </m.div>
+
+          {/* השטח השמור למוקאפ - לחיץ, מגלגל לטופס */}
           <m.div
             className="media-frame"
             initial={{ opacity: 0, filter: "blur(4px)", scale: 0.92 }}
@@ -145,7 +147,7 @@ export default function Hero() {
           >
             <a href="#form" className="mockup-link">
               <MockupSlot />
-              <span className="sr-only">— מעבר לטופס תיאום השיחה</span>
+              <span className="sr-only">מעבר לטופס תיאום הפגישה</span>
             </a>
           </m.div>
 
