@@ -166,9 +166,7 @@ export default function LeadForm() {
           id="form"
           style={{
             position: "relative",
-            // הסקשן מתחיל עכשיו ישר במשפט הדחיפות (הכותרת עברה ל-Pitch),
-            // אז הוא צריך אוויר מלמעלה כמו כל סקשן עצמאי
-            padding: "clamp(64px, 9vw, 100px) 0 clamp(72px, 10vw, 120px)",
+            padding: "clamp(38px, 5.5vw, 62px) 0 clamp(52px, 7vw, 84px)",
             background: "var(--bg-form)",
             scrollMarginTop: 40,
           }}

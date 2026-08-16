@@ -114,7 +114,7 @@ export default function SocialProof() {
           id="results"
           style={{
             position: "relative",
-            padding: "clamp(64px, 10vw, 110px) 0",
+            padding: "clamp(38px, 5.5vw, 62px) 0",
             background: "var(--bg)",
             overflow: "hidden",
           }}
