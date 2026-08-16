@@ -5,79 +5,113 @@ import { useReducedMotion } from "framer-motion";
 import { copy } from "@/lib/copy";
 
 /**
- * הכותרת הראשית עם אפקט הבעירה.
+ * הכותרת הבוערת.
  *
- * הרצף: שתי השורות נכנסות בכחול המותג, ואז השורה השנייה "נדלקת"
- * (מעבר רך לגרדיאנט אש עם ריצוד חום), ומתחתיה מתחילים ליפול
- * סימני דולר שנשרפים בדרך למטה.
+ * ההתנהגות:
+ * - בנחיתה: שתי השורות נכנסות בכחול, ואז "שורף כסף?״" נדלקת באדום-כתום,
+ *   ומתחתיה נופלים שטרות דולר שנאכלים באש תוך כדי נפילה.
+ * - בגלילה הראשונה למטה: האש כבה בעדינות (חזרה לכחול המותג),
+ *   וממשיכים לרחף מטה רק שטרות חרוכים, בקצב נמוך.
+ * - בחזרה לראש הדף: האש נדלקת שוב.
  *
- * מכבד prefers-reduced-motion: בלי ריצוד, בלי חלקיקים.
+ * מכבד prefers-reduced-motion: כותרת אש סטטית, בלי שטרות.
  */
 
-type Particle = {
-  x: number;
+type Bill = {
+  baseX: number;
   y: number;
-  vx: number;
   vy: number;
-  rot: number;
-  vrot: number;
-  size: number;
-  life: number; // 0..1
-  decay: number;
+  swayAmp: number;
+  swayFreq: number;
+  swayPhase: number;
+  rotBase: number;
+  rotAmp: number;
+  rotFreq: number;
+  rotPhase: number;
+  w: number;
+  burn: number;
+  burnRate: number;
+  charred: boolean;
+  fromLeft: boolean;
+  notches: number[];
+  age: number;
 };
 
-// מסלול הצבע של הדולר בדרך למטה: זהב → כתום → אדום → גחלת
-const EMBER_STOPS: [number, number, number][] = [
-  [255, 226, 138],
-  [255, 168, 46],
-  [255, 82, 24],
-  [150, 34, 8],
-];
+// כמה השטר נופל מתחת לכותרת לפני שהוא נעלם
+const FALL_ZONE = 340;
+const MAX_BILLS = 14;
 
-function emberColor(life: number): [number, number, number] {
-  const t = Math.min(0.999, Math.max(0, 1 - life)) * (EMBER_STOPS.length - 1);
-  const i = Math.floor(t);
-  const f = t - i;
-  const a = EMBER_STOPS[i];
-  const b = EMBER_STOPS[Math.min(EMBER_STOPS.length - 1, i + 1)];
-  return [
-    Math.round(a[0] + (b[0] - a[0]) * f),
-    Math.round(a[1] + (b[1] - a[1]) * f),
-    Math.round(a[2] + (b[2] - a[2]) * f),
-  ];
+// עוזר לציור מלבן מעוגל, עם נפילה לאחור לדפדפנים בלי roundRect
+function rrect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
+  ctx.beginPath();
+  if (typeof ctx.roundRect === "function") {
+    ctx.roundRect(x, y, w, h, r);
+  } else {
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
 }
 
 export default function BurningHeadline() {
   const { hero } = copy;
   const reduced = useReducedMotion();
-  const [ignited, setIgnited] = useState(false);
+  const [lit, setLit] = useState(false);
+  const modeRef = useRef<"off" | "fire" | "ember">("off");
   const hostRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLSpanElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // ההצתה: מעט אחרי שהכותרת נכנסה
+  // הצתה ראשונית + כיבוי/הצתה לפי מיקום הגלילה, עם היסטרזיס נגד ריצודים
   useEffect(() => {
     if (reduced) {
-      setIgnited(true);
+      setLit(true);
       return;
     }
-    const t = setTimeout(() => setIgnited(true), 1050);
-    return () => clearTimeout(t);
+    let ignited = false;
+    let atTop = true;
+
+    const update = () => {
+      const y = window.scrollY;
+      if (atTop && y > 60) atTop = false;
+      else if (!atTop && y < 12) atTop = true;
+      const next = ignited && atTop;
+      modeRef.current = !ignited ? "off" : next ? "fire" : "ember";
+      setLit((prev) => (prev === next ? prev : next));
+    };
+
+    const t = setTimeout(() => {
+      ignited = true;
+      update();
+    }, 1050);
+
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("scroll", update);
+    };
   }, [reduced]);
 
-  // הדולרים הבוערים
+  // מנוע השטרות
   useEffect(() => {
-    if (reduced || !ignited) return;
+    if (reduced) return;
     const canvas = canvasRef.current;
     const host = hostRef.current;
     const line = lineRef.current;
     if (!canvas || !host || !line) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
-    // הקנבס נמשך הרבה מתחת לכותרת כדי שלדולרים יהיה מרחק אמיתי ליפול ולהישרף בו
-    const FALL_ZONE = 320;
 
     let dpr = 1;
     const resize = () => {
@@ -92,27 +126,129 @@ export default function BurningHeadline() {
     resize();
     window.addEventListener("resize", resize);
 
-    const particles: Particle[] = [];
-    const MAX = 26;
+    const bills: Bill[] = [];
 
-    const spawn = () => {
-      if (particles.length >= MAX) return;
+    const spawn = (charred: boolean) => {
+      if (bills.length >= MAX_BILLS) return;
       const hostRect = host.getBoundingClientRect();
       const lineRect = line.getBoundingClientRect();
-      // נקודת לידה: לאורך תחתית השורה הבוערת
-      const x = lineRect.left - hostRect.left + Math.random() * lineRect.width;
-      const y = lineRect.bottom - hostRect.top - lineRect.height * 0.18;
-      particles.push({
-        x,
-        y,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: 0.35 + Math.random() * 0.5,
-        rot: Math.random() * Math.PI * 2,
-        vrot: (Math.random() - 0.5) * 0.05,
-        size: 14 + Math.random() * 14,
-        life: 1,
-        decay: 0.0032 + Math.random() * 0.0026,
+      const w = 34 + Math.random() * 22;
+      bills.push({
+        baseX: lineRect.left - hostRect.left + Math.random() * lineRect.width,
+        y: lineRect.bottom - hostRect.top - lineRect.height * 0.22,
+        vy: (charred ? 0.34 : 0.42) + Math.random() * 0.3,
+        swayAmp: 10 + Math.random() * 16,
+        swayFreq: 0.45 + Math.random() * 0.4,
+        swayPhase: Math.random() * Math.PI * 2,
+        rotBase: (Math.random() - 0.5) * 0.5,
+        rotAmp: 0.22 + Math.random() * 0.2,
+        rotFreq: 0.3 + Math.random() * 0.3,
+        rotPhase: Math.random() * Math.PI * 2,
+        w,
+        burn: charred ? 0.32 + Math.random() * 0.26 : 0.04,
+        burnRate: charred ? 0 : 0.0022 + Math.random() * 0.0014,
+        charred,
+        fromLeft: Math.random() < 0.5,
+        notches: Array.from({ length: 7 }, () => Math.random()),
+        age: 0,
       });
+    };
+
+    const drawBill = (b: Bill, now: number) => {
+      const h = b.w * 0.46;
+      const t = now / 1000;
+      const x = b.baseX + Math.sin(t * b.swayFreq * Math.PI * 2 + b.swayPhase) * b.swayAmp;
+      const rot =
+        b.rotBase + Math.sin(t * b.rotFreq * Math.PI * 2 + b.rotPhase) * b.rotAmp;
+
+      // דהייה בכניסה, וגם לקראת תחתית אזור הנפילה
+      const zoneH = canvas.height / dpr;
+      const fadeIn = Math.min(1, b.age / 500);
+      const fadeOut = Math.min(1, Math.max(0, (zoneH - b.y) / 90));
+      const ashFade = b.burn >= 0.97 ? Math.max(0, (1 - b.burn) / 0.03) : 1;
+      const alpha = 0.92 * fadeIn * fadeOut * ashFade;
+      if (alpha <= 0.01) return;
+
+      ctx.save();
+      ctx.translate(x, b.y);
+      ctx.rotate(rot);
+      ctx.globalAlpha = alpha;
+
+      // גוף השטר: ירקרק-קרם עדין, כהה יותר אם הוא חרוך
+      const bodyLight = b.charred ? "#a8ad9c" : "#d8ddc9";
+      const bodyDark = b.charred ? "#8e947f" : "#c2c9ae";
+      const grad = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
+      grad.addColorStop(0, bodyLight);
+      grad.addColorStop(1, bodyDark);
+      rrect(ctx, -b.w / 2, -h / 2, b.w, h, 2.5);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // מסגרת פנימית + עיגול מרכזי + $ : השפה הוויזואלית של שטר, במינימום קווים
+      ctx.strokeStyle = "rgba(74, 96, 72, 0.75)";
+      ctx.lineWidth = 1;
+      rrect(ctx, -b.w / 2 + 2.5, -h / 2 + 2.5, b.w - 5, h - 5, 1.5);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(0, 0, h * 0.34, h * 0.3, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(58, 82, 56, 0.9)";
+      ctx.font = `700 ${h * 0.42}px "Segoe UI", system-ui, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("$", 0, 0.5);
+
+      // אזור הבעירה: פוליגון משונן שאוכל את השטר מאחד הצדדים
+      if (b.burn > 0.02) {
+        const dir = b.fromLeft ? 1 : -1;
+        const edge = b.fromLeft ? -b.w / 2 : b.w / 2;
+        const burnX = edge + dir * b.burn * (b.w + 6);
+
+        ctx.beginPath();
+        ctx.moveTo(edge, -h / 2 - 1);
+        const steps = b.notches.length;
+        for (let i = 0; i <= steps; i++) {
+          const yy = -h / 2 + (h + 2) * (i / steps) - 1;
+          const jag = (b.notches[Math.min(i, steps - 1)] - 0.5) * 7;
+          ctx.lineTo(burnX + jag * dir, yy);
+        }
+        ctx.lineTo(edge, h / 2 + 1);
+        ctx.closePath();
+
+        const charGrad = ctx.createLinearGradient(burnX, 0, edge, 0);
+        charGrad.addColorStop(0, "#2a1c12");
+        charGrad.addColorStop(0.35, "#150d08");
+        charGrad.addColorStop(1, "#070403");
+        ctx.fillStyle = charGrad;
+        ctx.fill();
+
+        // קו הגחלת: זוהר כשיש אש, עמום כשחרוך
+        ctx.beginPath();
+        for (let i = 0; i <= steps; i++) {
+          const yy = -h / 2 + (h + 2) * (i / steps) - 1;
+          const jag = (b.notches[Math.min(i, steps - 1)] - 0.5) * 7;
+          if (i === 0) ctx.moveTo(burnX + jag * dir, yy);
+          else ctx.lineTo(burnX + jag * dir, yy);
+        }
+        if (!b.charred && b.burn < 0.96) {
+          const flick = 0.75 + 0.25 * Math.sin(now / 90 + b.swayPhase * 7);
+          ctx.strokeStyle = `rgba(255, 122, 30, ${0.9 * flick})`;
+          ctx.lineWidth = 1.7;
+          ctx.shadowColor = "rgba(255, 120, 30, 0.9)";
+          ctx.shadowBlur = 11 * flick;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = `rgba(255, 214, 130, ${0.8 * flick})`;
+          ctx.lineWidth = 0.7;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = "rgba(66, 48, 36, 0.85)";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+
+      ctx.restore();
     };
 
     let raf = 0;
@@ -120,48 +256,43 @@ export default function BurningHeadline() {
     let sinceSpawn = 0;
 
     const tick = (now: number) => {
-      const dt = Math.min(34, now - last);
+      const dt = Math.min(40, now - last);
       last = now;
-      sinceSpawn += dt;
+      const mode = modeRef.current;
 
-      // קצב לידה דליל בכוונה: רומז על שריפה, לא מציף את המסך
-      if (sinceSpawn > 240) {
+      // מחוץ למסך: לא מציירים ולא מולידים, רק ממשיכים להאזין
+      if (window.scrollY > window.innerHeight * 1.3) {
+        if (bills.length) {
+          bills.length = 0;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+        }
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+
+      sinceSpawn += dt;
+      const interval = mode === "fire" ? 480 : 1500;
+      if (mode !== "off" && sinceSpawn > interval && !document.hidden) {
         sinceSpawn = 0;
-        if (!document.hidden) spawn();
+        spawn(mode === "ember");
       }
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
 
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.vy += 0.012 * (dt / 16);
-        p.x += p.vx * (dt / 16);
-        p.y += p.vy * (dt / 16);
-        p.rot += p.vrot * (dt / 16);
-        p.life -= p.decay * (dt / 16);
+      for (let i = bills.length - 1; i >= 0; i--) {
+        const b = bills[i];
+        b.age += dt;
+        b.y += b.vy * (dt / 16);
+        if (!b.charred) b.burn = Math.min(1, b.burn + b.burnRate * dt);
 
-        if (p.life <= 0) {
-          particles.splice(i, 1);
+        const zoneH = canvas.height / dpr;
+        if (b.y > zoneH + 30 || b.burn >= 1) {
+          bills.splice(i, 1);
           continue;
         }
-
-        const [r, g, b] = emberColor(p.life);
-        const alpha = p.life < 0.35 ? p.life / 0.35 : 1;
-        const scale = 0.75 + p.life * 0.25;
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
-        ctx.globalAlpha = alpha;
-        ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.85)`;
-        ctx.shadowBlur = 14 * p.life + 4;
-        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-        ctx.font = `700 ${p.size * scale}px "Segoe UI", system-ui, sans-serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("$", 0, 0);
-        ctx.restore();
+        drawBill(b, now);
       }
 
       raf = requestAnimationFrame(tick);
@@ -172,15 +303,14 @@ export default function BurningHeadline() {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
     };
-  }, [ignited, reduced]);
+  }, [reduced]);
 
   return (
     <div ref={hostRef} className="burn-host">
       <canvas ref={canvasRef} className="burn-canvas" aria-hidden />
       <h1 className="hero-h1">
         <span className="hero-h1-a">{hero.h1Line1}</span>
-        <span ref={lineRef} className={`hero-h1-b${ignited ? " is-lit" : ""}`}>
-          {/* שתי שכבות זהות: הכחולה דועכת והאש עולה במקומה */}
+        <span ref={lineRef} className={`hero-h1-b${lit ? " is-lit" : ""}`}>
           <span className="burn-cool" aria-hidden>
             {hero.h1Line2}
           </span>

@@ -297,13 +297,14 @@ body {
   position: absolute;
   inset: 0;
   opacity: 0;
+  /* אדום דומיננטי עם אומברה כתום בוער בקצה העליון */
   background-image: linear-gradient(
     180deg,
-    #ffe8a3 0%,
-    #ffc247 26%,
-    #ff7a1f 58%,
-    #ff3d12 82%,
-    #c9200a 100%
+    #ffb547 0%,
+    #ff7a1f 24%,
+    #f8430f 48%,
+    #dd1b06 72%,
+    #8f0d04 100%
   );
   background-size: 100% 240%;
   background-position: 0% 12%;
@@ -329,24 +330,24 @@ body {
   }
 }
 
-/* ריצוד הלהבה סביב האותיות */
+/* ריצוד הלהבה סביב האותיות: זוהר אדום עם נגיעות כתומות */
 @keyframes ember-glow {
   0%,
   100% {
-    filter: drop-shadow(0 0 16px rgba(255, 118, 40, 0.5))
-      drop-shadow(0 0 34px rgba(255, 62, 14, 0.26));
+    filter: drop-shadow(0 0 15px rgba(248, 62, 16, 0.52))
+      drop-shadow(0 0 34px rgba(200, 24, 6, 0.3));
   }
   28% {
-    filter: drop-shadow(0 0 24px rgba(255, 168, 70, 0.62))
-      drop-shadow(0 0 48px rgba(255, 82, 18, 0.34));
+    filter: drop-shadow(0 0 23px rgba(255, 120, 36, 0.6))
+      drop-shadow(0 0 48px rgba(226, 34, 8, 0.38));
   }
   55% {
-    filter: drop-shadow(0 0 13px rgba(255, 104, 32, 0.44))
-      drop-shadow(0 0 28px rgba(255, 52, 10, 0.22));
+    filter: drop-shadow(0 0 12px rgba(240, 52, 14, 0.46))
+      drop-shadow(0 0 27px rgba(190, 20, 5, 0.26));
   }
   78% {
-    filter: drop-shadow(0 0 21px rgba(255, 150, 60, 0.58))
-      drop-shadow(0 0 42px rgba(255, 74, 16, 0.3));
+    filter: drop-shadow(0 0 20px rgba(255, 104, 30, 0.56))
+      drop-shadow(0 0 42px rgba(214, 28, 8, 0.34));
   }
 }
 
@@ -358,7 +359,7 @@ body {
 
   .hero-h1-b.is-lit .burn-hot {
     animation: none;
-    filter: drop-shadow(0 0 16px rgba(255, 118, 40, 0.45));
+    filter: drop-shadow(0 0 15px rgba(248, 62, 16, 0.45));
   }
 }
 
