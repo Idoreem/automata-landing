@@ -742,3 +742,21 @@ a:focus-visible {
   margin: clamp(30px, 4.5vw, 42px) 0 0;
 }
 
+
+/* ===== סקשן ההצעה: תווית סינון והדגשת החיסכון ===== */
+.pitch-eyebrow {
+  display: inline-block;
+  font-size: clamp(0.78rem, 1.5vw, 0.9rem);
+  font-weight: 700;
+  color: var(--accent-light);
+  background: rgba(77, 141, 255, 0.1);
+  border: 1px solid rgba(77, 141, 255, 0.32);
+  border-radius: 999px;
+  padding: 7px 16px;
+  margin: 0 0 18px;
+}
+
+.pitch-strong {
+  color: #ffffff;
+  font-weight: 800;
+}

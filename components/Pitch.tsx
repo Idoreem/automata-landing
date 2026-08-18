@@ -11,6 +11,12 @@ import { copy } from "@/lib/copy";
 export default function Pitch() {
   const { pitch } = copy;
 
+  // סכום החיסכון מודגש בתוך המשפט
+  const hasExplHighlight = pitch.explainer.includes(pitch.explainerHighlight);
+  const [explBefore, explAfter] = hasExplHighlight
+    ? pitch.explainer.split(pitch.explainerHighlight)
+    : [pitch.explainer, ""];
+
   const rise = (delay: number) =>
     ({
       initial: { opacity: 0, y: 30 },
@@ -49,8 +55,12 @@ export default function Pitch() {
               zIndex: 1,
             }}
           >
+            <m.p {...rise(0)} className="pitch-eyebrow">
+              {pitch.eyebrow}
+            </m.p>
+
             <m.h2
-              {...rise(0)}
+              {...rise(0.06)}
               style={{
                 fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)",
                 fontWeight: 800,
@@ -86,9 +96,14 @@ export default function Pitch() {
                 lineHeight: 1.85,
                 margin: "0 auto 30px",
                 maxWidth: 640,
+                whiteSpace: "pre-line",
               }}
             >
-              {pitch.explainer}
+              {explBefore}
+              {hasExplHighlight && (
+                <span className="pitch-strong">{pitch.explainerHighlight}</span>
+              )}
+              {explAfter}
             </m.p>
 
             <m.div
