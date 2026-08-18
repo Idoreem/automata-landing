@@ -354,25 +354,46 @@ p {
 }
 
 /* ===== כפתור צף למובייל ===== */
-.sticky-cta {
+/* המעטפת אחראית רק על ההצמדה לתחתית השטח שרואים בפועל.
+   --vv-gap מתעדכן מהקומפוננטה: הוא ההפרש בין תחתית הדף התיאורטית
+   (מה ש-position: fixed מכיר) לתחתית השטח הנראה, כלומר גובה שורת
+   הכתובת של הדפדפן ברגע נתון. בדסקטופ הוא 0 ואין לו שום השפעה. */
+.sticky-shell {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 50;
+  transform: translate3d(0, calc(-1 * var(--vv-gap, 0px)), 0);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.sticky-cta {
   display: flex;
   justify-content: center;
   padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
-  background: rgba(2, 6, 15, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  /* רקע אטום ולא blur: backdrop-filter על פס קבוע מאלץ את הדפדפן לדגום
+     מחדש את מה שמאחוריו בכל פריים גלילה, וזה מה שגרם לפס להישרך במובייל.
+     הרקע של הדף אחיד, ולכן אטום נראה זהה ועולה כלום. */
+  background: linear-gradient(
+    to top,
+    #02060f 0%,
+    #02060f 70%,
+    rgba(2, 6, 15, 0.94) 100%
+  );
   border-top: 1px solid rgba(77, 141, 255, 0.25);
-  transform: translateY(110%);
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  /* translate3d + will-change משאירים את הפס בשכבת קומפוזיטור משלו,
+     כך שהוא נצמד לתחתית גם בזמן גלילה מהירה */
+  transform: translate3d(0, 110%, 0);
+  will-change: transform;
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .sticky-cta.on {
-  transform: translateY(0);
+  transform: translate3d(0, 0, 0);
+  pointer-events: auto;
 }
 
 .sticky-cta .cta-btn {
@@ -384,7 +405,7 @@ p {
 }
 
 @media (min-width: 900px) {
-  .sticky-cta {
+  .sticky-shell {
     display: none;
   }
 }
