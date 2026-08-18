@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image, { type StaticImageData } from "next/image";
 import { LazyMotion, domAnimation, m, MotionConfig } from "framer-motion";
 import { copy } from "@/lib/copy";
@@ -40,6 +41,17 @@ function WhatsAppIcon() {
   );
 }
 
+/* זכוכית מגדלת - מסמנת שאפשר לפתוח את הצילום גדול */
+function ZoomIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M15.5 15.5 21 21" strokeLinecap="round" />
+      <path d="M10.5 7.5v6M7.5 10.5h6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const rise = {
   initial: { opacity: 0, y: 30 },
   whileInView: { opacity: 1, y: 0 },
@@ -51,6 +63,26 @@ export default function SocialProof() {
   const { socialProof, ui } = copy;
   const railRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const [zoom, setZoom] = useState<number | null>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const openerRef = useRef<HTMLButtonElement | null>(null);
+
+  // תצוגת ההגדלה: Esc סוגר, הרקע לא נגלל מתחת, והפוקוס חוזר לצילום שנפתח
+  useEffect(() => {
+    if (zoom === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setZoom(null);
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+      openerRef.current?.focus();
+    };
+  }, [zoom]);
 
   // הסרטונים מתנגנים רק כשהם בשדה הראייה. preload="none" משלים את זה:
   // 14MB של וידאו לא יורדים עד שגוללים לכאן.
@@ -147,7 +179,7 @@ export default function SocialProof() {
             <m.p
               {...rise}
               style={{
-                fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)",
+                fontSize: "clamp(1.02rem, 2.1vw, 1.18rem)",
                 color: "#aab4c8",
                 textAlign: "center",
                 margin: "0 0 30px",
@@ -196,7 +228,8 @@ export default function SocialProof() {
               ))}
             </div>
 
-            {/* צילומי וואטסאפ - נשארים כמו שהם, בלי חיתוך. האותנטיות היא הנכס */}
+            {/* צילומי וואטסאפ - שניים בשורה, בלי חיתוך. האותנטיות היא הנכס,
+                ולכן לחיצה פותחת את הצילום גדול וקריא */}
             <m.div {...rise} className="sp-shots">
               {socialProof.cards.map((card, i) => (
                 <figure className="sp-shot" key={card.title}>
@@ -206,16 +239,56 @@ export default function SocialProof() {
                     </span>
                     {card.title}
                   </figcaption>
-                  <Image
-                    src={SHOTS[i]}
-                    alt={card.alt}
-                    sizes="(max-width: 899px) 92vw, 440px"
-                    style={{ width: "100%", height: "auto", display: "block" }}
-                  />
+                  <button
+                    type="button"
+                    className="sp-zoom"
+                    onClick={(e) => {
+                      openerRef.current = e.currentTarget;
+                      setZoom(i);
+                    }}
+                    aria-label={`${card.title} - ${socialProof.zoomHint}`}
+                  >
+                    <Image
+                      src={SHOTS[i]}
+                      alt={card.alt}
+                      sizes="(max-width: 899px) 46vw, 440px"
+                      style={{ width: "100%", height: "auto", display: "block" }}
+                    />
+                    <span className="sp-zoom-hint" aria-hidden>
+                      <ZoomIcon />
+                    </span>
+                  </button>
                 </figure>
               ))}
             </m.div>
           </div>
+
+          {zoom !== null &&
+            createPortal(
+              <div
+                className="sp-lightbox"
+                role="dialog"
+                aria-modal="true"
+                aria-label={socialProof.cards[zoom].title}
+                onClick={() => setZoom(null)}
+              >
+                <button
+                  ref={closeRef}
+                  type="button"
+                  className="sp-lightbox-close"
+                  onClick={() => setZoom(null)}
+                >
+                  {socialProof.zoomClose}
+                </button>
+                <Image
+                  src={SHOTS[zoom]}
+                  alt={socialProof.cards[zoom].alt}
+                  sizes="96vw"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>,
+              document.body
+            )}
         </section>
       </LazyMotion>
     </MotionConfig>

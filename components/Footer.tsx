@@ -10,7 +10,7 @@ export default function Footer() {
         padding: "26px 24px calc(26px + env(safe-area-inset-bottom, 0px))",
         textAlign: "center",
         color: "#78828f",
-        fontSize: "0.82rem",
+        fontSize: "clamp(0.9rem, 2vw, 0.95rem)",
         lineHeight: 1.8,
       }}
     >

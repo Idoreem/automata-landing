@@ -170,7 +170,7 @@ export default function ThanksContent() {
             <m.p
               {...rise(0.58)}
               style={{
-                fontSize: "clamp(1rem, 1.9vw, 1.18rem)",
+                fontSize: "clamp(1.08rem, 2.3vw, 1.2rem)",
                 color: "#aab4c8",
                 lineHeight: 1.8,
                 margin: "0 0 clamp(28px, 4vw, 40px)",
@@ -196,7 +196,7 @@ export default function ThanksContent() {
             >
               <p
                 style={{
-                  fontSize: "clamp(0.98rem, 1.8vw, 1.12rem)",
+                  fontSize: "clamp(1.06rem, 2.2vw, 1.16rem)",
                   fontWeight: 600,
                   color: "#ffffff",
                   lineHeight: 1.85,
@@ -230,7 +230,7 @@ export default function ThanksContent() {
 
               <p
                 style={{
-                  fontSize: "0.86rem",
+                  fontSize: "clamp(0.94rem, 2.1vw, 1rem)",
                   color: "#9aa6ba",
                   margin: "14px 0 0",
                 }}

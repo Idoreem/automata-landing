@@ -3,6 +3,7 @@
 import { LazyMotion, domAnimation, m, MotionConfig } from "framer-motion";
 import { copy } from "@/lib/copy";
 import MockupSlot from "./MockupSlot";
+import BalancedText from "./BalancedText";
 
 // אנימציית הכניסה של הרפרנס: blur + fade + עלייה, בהדרגה
 const rise = (delay: number) => ({
@@ -13,12 +14,6 @@ const rise = (delay: number) => ({
 
 export default function Hero() {
   const { hero } = copy;
-  // הגנה מפני עריכת קופי עתידית: אם ה-highlight כבר לא בתוך הסאב - מציגים אותו רגיל
-  const hasHighlight = hero.sub.includes(hero.subHighlight);
-  const [beforeHighlight, afterHighlight] = hasHighlight
-    ? hero.sub.split(hero.subHighlight)
-    : [hero.sub, ""];
-
   return (
     <MotionConfig reducedMotion="user">
       <LazyMotion features={domAnimation} strict>
@@ -81,23 +76,20 @@ export default function Hero() {
               lineHeight: 1.4,
               maxWidth: 720,
               margin: "0 auto 18px",
-              whiteSpace: "pre-line",
             }}
           >
-            {beforeHighlight}
-            {hasHighlight && (
-              <span style={{ color: "var(--accent)", fontWeight: 800 }}>
-                {hero.subHighlight}
-              </span>
-            )}
-            {afterHighlight}
+            <BalancedText
+              text={hero.sub}
+              highlight={hero.subHighlight}
+              highlightClass="hero-sub-accent"
+            />
           </m.p>
 
           <m.p
             {...rise(0.32)}
             className="hero-layer"
             style={{
-              fontSize: "clamp(0.9rem, 1.7vw, 1.1rem)",
+              fontSize: "clamp(1rem, 2.3vw, 1.12rem)",
               color: "#aab4c8",
               maxWidth: 540,
               margin: "0 auto 28px",
@@ -117,7 +109,7 @@ export default function Hero() {
               href="#form"
               className="cta-btn cta-ghost"
               style={{
-                fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)",
+                fontSize: "clamp(1rem, 2.2vw, 1.15rem)",
                 padding: "clamp(13px, 1.8vw, 17px) clamp(22px, 4vw, 40px)",
                 maxWidth: "92vw",
               }}
@@ -164,7 +156,7 @@ export default function Hero() {
 
           <m.p
             {...rise(0.72)}
-            style={{ fontSize: "0.85rem", color: "#78828f", marginTop: 14 }}
+            style={{ fontSize: "clamp(0.92rem, 2.1vw, 1rem)", color: "#8b95a5", marginTop: 14 }}
           >
             {hero.microcopy}
           </m.p>

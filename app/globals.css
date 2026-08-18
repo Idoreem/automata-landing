@@ -28,6 +28,11 @@ body {
   color: #ffffff;
 }
 
+/* מונע מילה בודדת בשורה אחרונה של פסקה. בדפדפן שלא תומך - נשבר כרגיל */
+p {
+  text-wrap: pretty;
+}
+
 /* הדגשה אדומה חזקה בתוך משפט. יחס ניגודיות 5.6:1 מול var(--bg-form) */
 .hot-red {
   color: #ff3b30;
@@ -40,7 +45,7 @@ body {
 /* ===== טופס רב-שלבי (בלי מחוון שלבים גלוי) ===== */
 .step-label {
   display: block;
-  font-size: 0.9rem;
+  font-size: 0.98rem;
   font-weight: 700;
   color: var(--accent-light);
   margin-bottom: 9px;
@@ -48,7 +53,7 @@ body {
 
 /* שדה גדול: נוח לאצבע, וברור שהוא הדבר היחיד שצריך למלא עכשיו */
 .field-lg {
-  font-size: 1.06rem;
+  font-size: 1.1rem;
   padding: 18px 20px;
 }
 
@@ -56,7 +61,7 @@ body {
   display: flex;
   gap: 11px;
   align-items: flex-start;
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   color: #aab4c8;
   line-height: 1.6;
   text-align: right;
@@ -66,7 +71,7 @@ body {
 
 .step-error {
   color: #ffb0a4;
-  font-size: 0.87rem;
+  font-size: 0.95rem;
   margin: 12px 0 0;
   font-weight: 600;
 }
@@ -91,7 +96,7 @@ body {
   border: none;
   color: #8e99ad;
   font-family: inherit;
-  font-size: 0.87rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   padding: 8px 14px;
@@ -105,7 +110,7 @@ body {
 }
 
 .step-privacy {
-  font-size: 0.76rem;
+  font-size: 0.86rem;
   color: #78828f;
   text-align: center;
   margin: 18px 0 0;
@@ -119,7 +124,7 @@ body {
 }
 
 .step-safety {
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   color: #78828f;
   text-align: center;
   margin: 8px 0 0;
@@ -231,7 +236,7 @@ body {
 /* שורה שנייה: הגדולה, בכחול המותג */
 .hero-h1-b {
   display: inline-block;
-  font-size: clamp(3rem, 11.8vw, 7rem);
+  font-size: clamp(2.3rem, 11.2vw, 7rem);
   line-height: 1.06;
   letter-spacing: -0.015em;
   padding: 0 0.06em;
@@ -491,26 +496,27 @@ body {
   }
 }
 
-/* צילומי הוואטסאפ: מסונני עמודות (masonry) כדי שכל צילום יישאר ביחס
-   הטבעי שלו. חיתוך היה הופך הודעה קריאה לתמונה דקורטיבית. */
+/* צילומי הוואטסאפ: שניים בשורה בכל רוחב מסך, כדי לקצר את הגלילה.
+   אין חיתוך - כל צילום נשאר ביחס הטבעי שלו, ולחיצה פותחת אותו גדול. */
 .sp-shots {
-  columns: 1;
-  column-gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(10px, 2.4vw, 16px);
+  align-items: start;
   max-width: 920px;
   margin: 30px auto 0;
-  padding: 0 24px;
+  padding: 0 16px;
 }
 
 @media (min-width: 900px) {
   .sp-shots {
-    columns: 2;
+    padding: 0 24px;
   }
 }
 
 .sp-shot {
-  break-inside: avoid;
-  margin: 0 0 16px;
-  padding: 10px;
+  margin: 0;
+  padding: clamp(7px, 1.6vw, 10px);
   background: var(--card);
   border: 1px solid rgba(77, 141, 255, 0.25);
   border-radius: 16px;
@@ -526,13 +532,15 @@ body {
   }
 }
 
+/* בלוק ולא flex: כשהכרטיס חצי רוחב, הכותרת חייבת לגלוש מתחת לאייקון
+   ולא להידחס לצידו */
 .sp-shot figcaption {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px 12px;
+  display: block;
+  padding: 5px 6px 10px;
   font-weight: 700;
-  font-size: 0.92rem;
+  font-size: clamp(0.86rem, 2.4vw, 1rem);
+  line-height: 1.4;
+  text-align: center;
   color: #ffffff;
 }
 
@@ -541,17 +549,122 @@ body {
 }
 
 .sp-wa {
-  display: grid;
+  display: inline-grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: clamp(18px, 4.6vw, 22px);
+  height: clamp(18px, 4.6vw, 22px);
+  vertical-align: -0.28em;
+  margin-inline-end: 6px;
   flex: none;
   color: #25d366;
 }
 
 .sp-wa svg {
-  width: 18px;
-  height: 18px;
+  width: clamp(15px, 3.8vw, 18px);
+  height: clamp(15px, 3.8vw, 18px);
+}
+
+/* לחיצה על צילום פותחת אותו גדול - בלי זה חצי רוחב במובייל הופך
+   הודעה קריאה לתמונה דקורטיבית */
+.sp-zoom {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+  border-radius: 10px;
+  position: relative;
+}
+
+.sp-zoom:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* תג זכוכית מגדלת בפינה. תווית טקסט הייתה מכסה את ההודעה עצמה */
+.sp-zoom-hint {
+  position: absolute;
+  inset-block-end: 6px;
+  inset-inline-end: 6px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(2, 6, 15, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #dce6f7;
+  pointer-events: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.sp-zoom-hint svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sp-zoom:hover .sp-zoom-hint {
+  background: rgba(77, 141, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.sp-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(2, 6, 15, 0.94);
+  backdrop-filter: blur(6px);
+  animation: sp-fade 0.18s ease-out;
+}
+
+@keyframes sp-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-lightbox {
+    animation: none;
+  }
+}
+
+.sp-lightbox img {
+  max-width: 100%;
+  max-height: 84vh;
+  width: auto;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(77, 141, 255, 0.3);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65);
+}
+
+.sp-lightbox-close {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top, 0px));
+  inset-inline-end: 14px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sp-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .cta-btn {
@@ -682,7 +795,7 @@ a:focus-visible {
 }
 
 .diag-eyebrow {
-  font-size: 0.85rem;
+  font-size: clamp(0.98rem, 2.4vw, 1.08rem);
   font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--accent-light);
@@ -707,46 +820,75 @@ a:focus-visible {
 .diag-blocks {
   display: flex;
   flex-direction: column;
-  gap: clamp(24px, 4vw, 34px);
-  text-align: right;
+  align-items: center;
+  gap: clamp(30px, 5vw, 42px);
+  text-align: center;
 }
 
-/* קו מבטא בצד הימני של כל בלוק, כמו ציטוט */
+/* הכל ממורכז, ולכן במקום קו בצד יש קו קצר ממורכז מעל כל בלוק */
 .diag-block {
-  border-inline-start: 2px solid rgba(77, 141, 255, 0.28);
-  padding-inline-start: clamp(14px, 3vw, 20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.diag-block::before {
+  content: "";
+  display: block;
+  width: 38px;
+  height: 2px;
+  margin: 0 auto 16px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(77, 141, 255, 0.75) 50%,
+    transparent 100%
+  );
 }
 
 .diag-hook {
-  font-size: clamp(1.02rem, 2.1vw, 1.2rem);
+  font-size: clamp(1.14rem, 2.6vw, 1.32rem);
   font-weight: 800;
   color: var(--accent-light);
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   line-height: 1.45;
+  text-wrap: balance;
 }
 
 .diag-body {
-  font-size: clamp(0.98rem, 1.9vw, 1.12rem);
+  font-size: clamp(1.08rem, 2.3vw, 1.22rem);
   color: #b6c0d2;
-  line-height: 1.9;
+  line-height: 1.85;
   margin: 0;
-  white-space: pre-line;
+}
+
+/* כל שורת קופי היא בלוק בפני עצמו, כדי שהיא תישבר מאוזן ולא תשאיר
+   מילה יתומה באמצע טקסט ממורכז */
+.balanced-line {
+  display: block;
+  text-wrap: balance;
+}
+
+.hero-sub-accent {
+  color: var(--accent);
+  font-weight: 800;
 }
 
 .diag-kicker {
-  font-size: clamp(1.1rem, 2.4vw, 1.4rem);
+  font-size: clamp(1.22rem, 2.9vw, 1.52rem);
   font-weight: 800;
   color: #ffffff;
-  line-height: 1.65;
-  white-space: pre-line;
-  margin: clamp(30px, 4.5vw, 42px) 0 0;
+  line-height: 1.6;
+  margin: clamp(34px, 5vw, 46px) auto 0;
 }
 
 
 /* ===== סקשן ההצעה: תווית סינון והדגשת החיסכון ===== */
 .pitch-eyebrow {
   display: inline-block;
-  font-size: clamp(0.78rem, 1.5vw, 0.9rem);
+  font-size: clamp(0.9rem, 2.1vw, 1rem);
   font-weight: 700;
   color: var(--accent-light);
   background: rgba(77, 141, 255, 0.1);

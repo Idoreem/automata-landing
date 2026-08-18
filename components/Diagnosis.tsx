@@ -2,6 +2,7 @@
 
 import { LazyMotion, domAnimation, m, MotionConfig } from "framer-motion";
 import { copy } from "@/lib/copy";
+import BalancedText from "./BalancedText";
 
 /**
  * סקשן האבחון: מסביר למה הכל נופל על בעל העסק,
@@ -38,13 +39,15 @@ export default function Diagnosis() {
               {diagnosis.blocks.map((b, i) => (
                 <m.div key={b.hook} {...rise(0.1 + i * 0.06)} className="diag-block">
                   <h3 className="diag-hook">{b.hook}</h3>
-                  <p className="diag-body">{b.body}</p>
+                  <p className="diag-body">
+                    <BalancedText text={b.body} />
+                  </p>
                 </m.div>
               ))}
             </div>
 
             <m.p {...rise(0.3)} className="diag-kicker">
-              {diagnosis.kicker}
+              <BalancedText text={diagnosis.kicker} />
             </m.p>
 
           </div>

@@ -6,6 +6,7 @@ import { AnimatePresence, LazyMotion, domAnimation, m, MotionConfig } from "fram
 import { copy } from "@/lib/copy";
 import { BASE_PATH } from "@/lib/site";
 import { LEAD_KEY, newEventId, trackLead } from "@/components/MetaPixel";
+import BalancedText from "./BalancedText";
 
 type Status = "idle" | "sending" | "error";
 type FieldKey = "name" | "email" | "phone";
@@ -70,12 +71,6 @@ export default function LeadForm() {
 
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
-
-  // "וישרדו את מהפכת הAI" יוצא באדום בתוך משפט הדחיפות
-  const hasPreHighlight = form.preCard.includes(form.preCardHighlight);
-  const [preCardBefore, preCardAfter] = hasPreHighlight
-    ? form.preCard.split(form.preCardHighlight)
-    : [form.preCard, ""];
 
   useEffect(() => {
     router.prefetch("/thanks");
@@ -209,20 +204,20 @@ export default function LeadForm() {
               viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 0.6, delay: 0.15 }}
               style={{
-                fontSize: "clamp(1.05rem, 2vw, 1.28rem)",
+                fontSize: "clamp(1.12rem, 2.5vw, 1.32rem)",
                 fontWeight: 700,
                 color: "#ffffff",
                 lineHeight: 1.7,
                 textAlign: "center",
                 margin: "0 0 38px",
-                whiteSpace: "pre-line",
               }}
             >
-              {preCardBefore}
-              {hasPreHighlight && (
-                <span className="hot-red">{form.preCardHighlight}</span>
-              )}
-              {preCardAfter}
+              {/* "וישרדו את מהפכת הAI" יוצא באדום בתוך משפט הדחיפות */}
+              <BalancedText
+                text={form.preCard}
+                highlight={form.preCardHighlight}
+                highlightClass="hot-red"
+              />
             </m.p>
 
             <m.div

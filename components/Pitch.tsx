@@ -2,6 +2,7 @@
 
 import { LazyMotion, domAnimation, m, MotionConfig } from "framer-motion";
 import { copy } from "@/lib/copy";
+import BalancedText from "./BalancedText";
 
 /**
  * סקשן ההצעה: מה מציעים ולמה. יושב בין ההירו להמלצות, כך שהגולש
@@ -10,12 +11,6 @@ import { copy } from "@/lib/copy";
  */
 export default function Pitch() {
   const { pitch } = copy;
-
-  // סכום החיסכון מודגש בתוך המשפט
-  const hasExplHighlight = pitch.explainer.includes(pitch.explainerHighlight);
-  const [explBefore, explAfter] = hasExplHighlight
-    ? pitch.explainer.split(pitch.explainerHighlight)
-    : [pitch.explainer, ""];
 
   const rise = (delay: number) =>
     ({
@@ -77,33 +72,31 @@ export default function Pitch() {
             <m.p
               {...rise(0.1)}
               style={{
-                fontSize: "clamp(1rem, 1.8vw, 1.18rem)",
+                fontSize: "clamp(1.08rem, 2.3vw, 1.22rem)",
                 color: "#aab4c8",
                 lineHeight: 1.85,
                 margin: "0 auto 18px",
-                whiteSpace: "pre-line",
                 maxWidth: 640,
               }}
             >
-              {pitch.subtext}
+              <BalancedText text={pitch.subtext} />
             </m.p>
 
             <m.p
               {...rise(0.16)}
               style={{
-                fontSize: "clamp(1rem, 1.8vw, 1.18rem)",
+                fontSize: "clamp(1.08rem, 2.3vw, 1.22rem)",
                 color: "#aab4c8",
                 lineHeight: 1.85,
                 margin: "0 auto 30px",
                 maxWidth: 640,
-                whiteSpace: "pre-line",
               }}
             >
-              {explBefore}
-              {hasExplHighlight && (
-                <span className="pitch-strong">{pitch.explainerHighlight}</span>
-              )}
-              {explAfter}
+              <BalancedText
+                text={pitch.explainer}
+                highlight={pitch.explainerHighlight}
+                highlightClass="pitch-strong"
+              />
             </m.p>
 
             <m.div
